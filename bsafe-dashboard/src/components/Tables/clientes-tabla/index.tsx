@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/table";
 import Image from "next/image";
 import { getClientes } from "../fetch";
+import { TrashIcon , PencilSquareIcon } from "@/assets/icons";
 
 export async function ClientesTabla() {
   const data = await getClientes();
@@ -45,6 +46,7 @@ export async function ClientesTabla() {
             <TableHead>Direccion</TableHead>
             <TableHead>Correo</TableHead>
             <TableHead>Telefono</TableHead>
+            <TableHead className="text-right xl:pr-7.5">Opciones</TableHead>
           </TableRow>
         </TableHeader>
 
@@ -65,7 +67,20 @@ export async function ClientesTabla() {
               <TableCell>{cliente.correo}</TableCell>
 
               <TableCell>{cliente.telefono}</TableCell>
-
+              <TableCell className="xl:pr-7.5">
+                                <div className="flex items-center justify-end gap-x-3.5">
+                                  <button className="hover:text-primary">
+                                    <span className="sr-only">Editar</span>
+                                    <PencilSquareIcon />
+                                  </button>
+                
+                                  <button className="hover:text-primary">
+                                    <span className="sr-only">Eliminar</span>
+                                    <TrashIcon />
+                                  </button>
+                
+                                </div>
+                              </TableCell>
             </TableRow>
           ))}
         </TableBody>

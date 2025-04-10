@@ -23,6 +23,7 @@ export function TopProductsSkeleton() {
             <TableHead>Marca</TableHead>
             <TableHead>Categoria</TableHead>
             <TableHead>Cantidad</TableHead>
+            <TableHead className="text-right xl:pr-7.5">Opciones</TableHead>
           </TableRow>
         </TableHeader>
 

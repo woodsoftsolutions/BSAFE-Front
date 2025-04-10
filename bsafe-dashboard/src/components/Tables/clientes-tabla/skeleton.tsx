@@ -23,6 +23,7 @@ export function TopProductsSkeleton() {
             <TableHead>Direccion</TableHead>
             <TableHead>Correo</TableHead>
             <TableHead>Telefono</TableHead>
+            <TableHead className="text-right xl:pr-7.5">Opciones</TableHead>
           </TableRow>
         </TableHeader>
 
