@@ -1,8 +1,9 @@
 import { ProveedoresTabla } from "@/components/Tables/proveedores-tabla";
 import { TopProductsSkeleton } from "@/components/Tables/proveedores-tabla/skeleton";
-
+import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import { Metadata } from "next";
 import { Suspense } from "react";
+import AddProveedoresModal from "@/components/Modals/AddProveedoresModal";
 
 export const metadata: Metadata = {
   title: "Proveedores",
@@ -16,23 +17,12 @@ const TablesPage = () => {
 return (
     <> 
     <div className="flex flex-col gap-6">
-<div className="flex justify-between items-center px-6 py-4 bg-[#99DFD8] dark:bg-[#24726b] rounded-[10px]">
-        
+    <Breadcrumb pageName="Listado de Proveedores" />
 
-        <button className="px-15 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-100 dark:bg-gray-dark dark:text-white">
-          Listado <br></br> De Proveedores
-        </button>
-          <button className="px-15 py-2 bg-none text-gray-700 dark:text-white dark:hover:text-white font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-dark">
-            Añadir <br></br> Proveedor
-          </button>
-          <button className="px-15 py-2 bg-none text-gray-700 dark:text-white dark:hover:text-white font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-dark">
-            Eliminar <br></br> Proveedor
-          </button>
-          <button className="px-15 py-2 bg-none text-gray-700 dark:text-white dark:hover:text-white font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-dark">
-            Actualizar <br></br> Proveedor
-          </button>
-
-      </div>
+            {/* Modal Trigger */}
+        <AddProveedoresModal
+          triggerButtonClassName="max-w-50 px-5 py-2 bg-[#99DFD8] hover:bg-[#24726b] hover:text-white text-gray-700 dark:text-white dark:hover:text-white dark:bg-[#24726b] font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-dark self-end"
+        />
       <div className="space-y-10">
         
         <Suspense fallback={<TopProductsSkeleton />}>
