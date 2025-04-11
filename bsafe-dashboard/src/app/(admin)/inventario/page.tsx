@@ -3,7 +3,10 @@ import { TopProductsSkeleton } from "@/components/Tables/inventario-tabla/skelet
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import { Metadata } from "next";
 import { Suspense } from "react";
-import AddInventarioModal from "@/components/Modals/AddInventarioModal";
+import AddInventarioModal from "@/components/modals/AddInventarioModal";
+import StatsCard from "@/components/StatsBox/StatsCard";
+
+
 
 export const metadata: Metadata = {
   title: "Inventario",
@@ -18,6 +21,16 @@ return (
     <> 
     <div className="flex flex-col gap-6">
     <Breadcrumb pageName="Listado de Inventario" />
+    
+        {/* Stats Box */}
+        <div className="bg-white shadow-xl rounded-lg p-4">
+          <div className="grid grid-cols-4 divide-x divide-gray-200">
+          <StatsCard title="Categorias" colorClass="text-blue-500" />
+          <StatsCard title="Total Productos" colorClass="text-blue-900" />
+          <StatsCard title="Sin Stock" colorClass="text-red-500" />
+          <StatsCard title="Stock Bajo" colorClass="text-yellow-500" />
+        </div>
+        </div>
 
            {/* Modal Trigger */}
         <AddInventarioModal
