@@ -137,6 +137,42 @@ export async function getProductos() {
   ];
 }
 
+export async function getInventario() {
+  // Fake delay
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+
+  return [
+    {
+      nombre: "Access Point TP-Link",
+      tipo: "Red",
+      minimo: 15,
+      precio: "200",
+      cantidad: 0,
+    },
+    {
+      nombre: "Access Point TP-Link",
+      tipo: "Red",
+      minimo: 15,
+      precio: "200",
+      cantidad: 10,
+    },
+    {
+      nombre: "Access Point TP-Link",
+      tipo: "Red",
+      minimo: 15,
+      precio: "200",
+      cantidad: 20,
+    },
+    {
+      nombre: "Access Point TP-Link",
+      tipo: "Red",
+      minimo: 15,
+      precio: "200",
+      cantidad: 30,
+    },
+  ];
+}
+
 
 export async function getInvoiceTableData() {
   // Fake delay
