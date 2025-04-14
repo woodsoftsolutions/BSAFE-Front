@@ -20,7 +20,7 @@ export function ChevronUp(props: PropsType) {
   );
 }
 
-export function SettingsIcon(props: SVGPropsType) {
+export function SettingsIcon(props: PropsType) {
   return (
     <svg
       width={20}
