@@ -3,7 +3,7 @@ import { TopProductsSkeleton } from "@/components/Tables/inventario-tabla/skelet
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import { Metadata } from "next";
 import { Suspense } from "react";
-import AddInventarioModal from "@/components/modals/AddInventarioModal";
+import AddInventarioModal from "@/components/Modals/AddInventarioModal";
 import StatsCard from "@/components/StatsBox/StatsCard";
 
 export const metadata: Metadata = {
