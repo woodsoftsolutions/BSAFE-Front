@@ -13,7 +13,7 @@ export const NAV_DATA = [
       {
         title: "Proveedores",
         url: "/proveedores",
-        icon: Icons.Table,
+        icon: Icons.Proveedores,
         items: [],
       },
       {
@@ -38,6 +38,12 @@ export const NAV_DATA = [
         title: "Inventario",
         url: "/inventario",
         icon: Icons.Alphabet,
+        items: [],
+      },
+      {
+        title: "Cotizaciones",
+        url: "/cotizaciones",
+        icon: Icons.Cotizacion,
         items: [],
       },
       {

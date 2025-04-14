@@ -18,11 +18,9 @@ export function TopProductsSkeleton() {
       <Table>
         <TableHeader>
           <TableRow className="border-t text-base [&>th]:h-auto [&>th]:py-3 sm:[&>th]:py-4.5">
-            <TableHead className="min-w-[120px]">Producto</TableHead>
-            <TableHead>Tipo</TableHead>
-            <TableHead>Cantidad</TableHead>
-            <TableHead>Mínimo</TableHead>
-            <TableHead>Precio</TableHead>
+            <TableHead >Fecha</TableHead>
+            <TableHead className="min-w-[120px]">Cliente</TableHead>
+            <TableHead>Costo</TableHead>
             <TableHead>Estatus</TableHead>
             <TableHead className="text-right xl:pr-7.5">Opciones</TableHead>
           </TableRow>

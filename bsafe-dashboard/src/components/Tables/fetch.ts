@@ -173,6 +173,37 @@ export async function getInventario() {
   ];
 }
 
+export async function getCotizacion() {
+  // Fake delay
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+
+  return [
+    {
+      cliente: "Inersiones C.A.",
+      fecha: "17/03/2025",
+      costo: 1500,
+      estatus: "Aprobada",
+    },
+    {
+      cliente: "Inersiones 2 C.A.",
+      fecha: "16/03/2025",
+      costo: 1500,
+      estatus: "Pendiente",
+    },
+    {
+      cliente: "Inersiones 3 C.A.",
+      fecha: "18/03/2025",
+      costo: 1500,
+      estatus: "Rechazada",
+    },
+    {
+      cliente: "Inersiones 4 C.A.",
+      fecha: "19/03/2025",
+      costo: 1500,
+      estatus: "Aprobada",
+    },
+  ];
+}
 
 export async function getInvoiceTableData() {
   // Fake delay
