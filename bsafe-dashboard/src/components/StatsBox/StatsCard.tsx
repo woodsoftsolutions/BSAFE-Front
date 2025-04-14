@@ -32,6 +32,18 @@ const StatsCard = ({ title, colorClass }: StatsCardProps) => {
           case "Stock Bajo":
             result = { value: stats.stockBajo.cantidad, subValue: stats.stockBajo.ordenado };
             break;
+          case "Cotizaciones":
+            result = { value: stats.cotizaciones };
+            break;
+          case "Aprobadas":
+            result = { value: stats.cotAprobadas };
+            break;
+          case "Pendientes":
+            result = { value: stats.cotPendientes };
+            break;
+          case "Rechazadas":
+            result = { value: stats.cotRechazadas };
+            break;  
           default:
             throw new Error(`Unknown title: ${title}`);
         }
@@ -56,10 +68,10 @@ const StatsCard = ({ title, colorClass }: StatsCardProps) => {
   }
 
   return (
-    <div className="flex flex-col rounded-lg p-6 bg-white">
+    <div className="flex flex-col p-6 bg-white dark:bg-gray-dark">
       <h3 className={`text-xl font-bold ${colorClass}`}>{title}</h3>
       <div className="flex justify-between items-center mt-2">
-        <p className="text-xl font-bold text-gray-600">{data.value}</p>
+        <p className="text-xl font-bold dark:text-white text-gray-600">{data.value}</p>
         {data.subValue !== undefined && (
           <p className="text-xl font-bold text-gray-900">{data.subValue}</p>
         )}

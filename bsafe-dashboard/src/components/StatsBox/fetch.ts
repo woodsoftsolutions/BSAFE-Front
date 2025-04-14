@@ -3,6 +3,10 @@ export interface StatsData {
     totalProducts: number;
     sinStock: { cantidad: number; ordenado: number };
     stockBajo: { cantidad: number; ordenado: number };
+    cotizaciones: number;
+    cotAprobadas: number;
+    cotPendientes: number;
+    cotRechazadas: number;
   }
   
 // testing
@@ -11,6 +15,10 @@ const mockStatsData: StatsData = {
     totalProducts: 868,
     sinStock: { cantidad: 5, ordenado: 5 },
     stockBajo: { cantidad: 12, ordenado: 2 },
+    cotizaciones: 324,
+    cotAprobadas: 256,
+    cotPendientes: 50,
+    cotRechazadas: 18,
   };
   
   export const fetchStats = async (): Promise<StatsData> => {
