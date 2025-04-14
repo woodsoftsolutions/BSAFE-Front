@@ -127,7 +127,7 @@ export function Sidebar() {
                                 className="ml-9 mr-0 space-y-1.5 pb-[15px] pr-0 pt-2"
                                 role="menu"
                               >
-                                {item.items.map((subItem) => (
+                                {item.items.map((subItem: { title: string; url: string }) => (
                                   <li key={subItem.title} role="none">
                                     <MenuItem
                                       as="link"
@@ -144,10 +144,10 @@ export function Sidebar() {
                         ) : (
                           (() => {
                             const href =
-                              "url" in item
-                                ? item.url + ""
+                              "url" in (item as { url: string; title: string })
+                                ? (item as { url: string; title: string }).url + ""
                                 : "/" +
-                                  item.title.toLowerCase().split(" ").join("-");
+                                  (item as { title: string }).title.toLowerCase().split(" ").join("-");
 
                             return (
                               <MenuItem
