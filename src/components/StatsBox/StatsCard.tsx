@@ -23,7 +23,7 @@ const StatsCard = ({ title, colorClass }: StatsCardProps) => {
           case "Categorias":
             result = { value: stats.categorias };
             break;
-          case "Total Productos":
+          case "Total":
             result = { value: stats.totalProducts };
             break;
           case "Sin Stock":
@@ -68,12 +68,12 @@ const StatsCard = ({ title, colorClass }: StatsCardProps) => {
   }
 
   return (
-    <div className="flex flex-col p-6 bg-white dark:bg-gray-dark">
+    <div className="flex flex-col py-6 px-2 md:px-6 xl:px-6 bg-white dark:bg-gray-dark">
       <h3 className={`text-xl font-bold ${colorClass}`}>{title}</h3>
       <div className="flex justify-between items-center mt-2">
         <p className="text-xl font-bold dark:text-white text-gray-600">{data.value}</p>
         {data.subValue !== undefined && (
-          <p className="text-xl font-bold text-gray-900">{data.subValue}</p>
+          <p className="text-xl  font-bold dark:text-white text-gray-600">{data.subValue}</p>
         )}
       </div>
       <div className="flex justify-between items-center mt-1">

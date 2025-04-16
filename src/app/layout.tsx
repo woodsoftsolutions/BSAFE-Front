@@ -14,11 +14,11 @@ import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | NextAdmin - Next.js Dashboard Kit",
-    default: "NextAdmin - Next.js Dashboard Kit",
+    template: "%s | BSAFE",
+    default: "BSAFE",
   },
   description:
-    "Next.js admin dashboard toolkit with 200+ templates, UI components, and integrations for fast dashboard development.",
+    "BSAFE is a web application that provides a comprehensive solution for managing and monitoring your business operations.",
 };
 
 export default function RootLayout({ children }: PropsWithChildren) {
