@@ -63,7 +63,7 @@ export function Sidebar() {
         aria-hidden={!isOpen}
         inert={!isOpen}
       >
-        <div className="flex h-full flex-col py-10 pl-[25px] pr-[7px] justify-self-start">
+        <div className="flex h-full min-w-full flex-col py-10 pl-[25px] pr-[7px] justify-self-start">
           <div className="relative pr-4.5 ">
             <Link
               href={"/"}
@@ -76,7 +76,7 @@ export function Sidebar() {
             {isMobile && (
               <button
                 onClick={toggleSidebar}
-                className="absolute left-3/4 right-4.5 top-1/2 -translate-y-1/2 text-right"
+                className="absolute left-7/8 right-4.5 top-1/2 -translate-y-1/2 text-right"
               >
                 <span className="sr-only">Close Menu</span>
 

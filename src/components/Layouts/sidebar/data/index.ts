@@ -58,7 +58,7 @@ export const NAV_DATA = [
     label: "OTROS",
     items: [
       {
-        title: "Authentication",
+        title: "Authenticación",
         icon: Icons.Authentication,
         url: "/auth/sign-in",
         items: [],
