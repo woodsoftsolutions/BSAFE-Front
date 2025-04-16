@@ -14,11 +14,11 @@ import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: {
-    template: "BSAFE Inventario",
-    default: "BSAFE Inventario",
+    template: "BSAFE Admin",
+    default: "BSAFE Admin",
   },
   description:
-    "BSAFE Inventario es una plataforma de gestión de inventarios que permite a los usuarios llevar un control eficiente de sus productos y recursos.",
+    "BSAFE Admin es una plataforma de gestión de inventarios que permite a los usuarios llevar un control eficiente de sus productos y recursos.",
 };
 
 export default function RootLayout({ children }: PropsWithChildren) {

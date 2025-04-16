@@ -21,7 +21,7 @@ const TablesPage = () => {
 
         {/* Stats Box */}
         <div className="rounded-lg bg-white p-4 shadow-xl dark:bg-gray-dark dark:shadow-card">
-          <div className="grid grid-cols-4 divide-x divide-gray-200 dark:divide-gray-700">
+          <div className="grid grid-cols-2 xl:grid-cols-4 xl:divide-x divide-gray-200 dark:divide-gray-700">
             <StatsCard title="Cotizaciones" colorClass="text-blue-500" />
             <StatsCard title="Aprobadas" colorClass="text-blue-900" />
             <StatsCard title="Pendientes" colorClass="text-red-500" />

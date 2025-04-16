@@ -81,7 +81,7 @@ export function DonutChart({ data }: PropsType) {
         breakpoint: 370,
         options: {
           chart: {
-            width: 260,
+            width: 300,
           },
         },
       },
@@ -89,10 +89,26 @@ export function DonutChart({ data }: PropsType) {
   };
 
   return (
+    <div
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      width: "100%",
+      overflow: "hidden"
+    }}
+  >
     <Chart
       options={chartOptions}
       series={data.map((item) => item.amount)}
       type="donut"
     />
+  </div>
+
+    // <Chart
+    //   options={chartOptions}
+    //   series={data.map((item) => item.amount)}
+    //   type="donut"
+    // />
   );
 }
