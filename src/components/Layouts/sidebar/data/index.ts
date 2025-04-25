@@ -11,6 +11,18 @@ export const NAV_DATA = [
         items: [],
       },
       {
+        title: "Inventario",
+        url: "/inventario",
+        icon: Icons.Alphabet,
+        items: [],
+      },
+      {
+        title: "Cotizaciones",
+        url: "/cotizaciones",
+        icon: Icons.Cotizacion,
+        items: [],
+      },
+      {
         title: "Proveedores",
         url: "/proveedores",
         icon: Icons.Proveedores,
@@ -34,18 +46,7 @@ export const NAV_DATA = [
         icon: Icons.FourCircle,
         items: [],
       },
-      {
-        title: "Inventario",
-        url: "/inventario",
-        icon: Icons.Alphabet,
-        items: [],
-      },
-      {
-        title: "Cotizaciones",
-        url: "/cotizaciones",
-        icon: Icons.Cotizacion,
-        items: [],
-      },
+     
       {
         title: "Settings",
         icon: Icons.SettingsIcon,
