@@ -21,16 +21,14 @@ export const metadata: Metadata = {
     "BSAFE is a web application that provides a comprehensive solution for managing and monitoring your business operations.",
 };
 
+// RootLayout es ahora solo un Server Component, sin hooks ni lógica de cliente
 export default function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
         <Providers>
           <NextTopLoader showSpinner={false} />
-
-
-
-                {children}
+          {children}
         </Providers>
       </body>
     </html>

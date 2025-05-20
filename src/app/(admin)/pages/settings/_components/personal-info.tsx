@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect, useState } from "react";
 import {
   CallIcon,
   EmailIcon,
@@ -7,8 +10,34 @@ import {
 import InputGroup from "@/components/FormElements/InputGroup";
 import { TextAreaGroup } from "@/components/FormElements/InputGroup/text-area";
 import { ShowcaseSection } from "@/components/Layouts/showcase-section";
+import { getAuthUser } from "@/lib/services/auth";
 
 export function PersonalInfoForm() {
+  const [user, setUser] = useState<any>(null);
+  const [form, setForm] = useState({
+    fullName: "",
+    phoneNumber: "",
+    email: "",
+    username: "",
+  });
+
+  useEffect(() => {
+    const authUser = getAuthUser();
+    if (authUser) {
+      setUser(authUser);
+      setForm({
+        fullName: authUser.name || "",
+        phoneNumber: "", // No phone in AuthUser, leave blank
+        email: authUser.email || "",
+        username: authUser.email ? authUser.email.split("@")[0] : "",
+      });
+    }
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
   return (
     <ShowcaseSection title="Personal Information" className="!p-7">
       <form>
@@ -19,7 +48,8 @@ export function PersonalInfoForm() {
             name="fullName"
             label="Full Name"
             placeholder="David Jhon"
-            defaultValue="David Jhon"
+            value={form.fullName}
+            handleChange={handleChange}
             icon={<UserIcon />}
             iconPosition="left"
             height="sm"
@@ -31,7 +61,8 @@ export function PersonalInfoForm() {
             name="phoneNumber"
             label="Phone Number"
             placeholder="+990 3343 7865"
-            defaultValue={"+990 3343 7865"}
+            value={form.phoneNumber}
+            handleChange={handleChange}
             icon={<CallIcon />}
             iconPosition="left"
             height="sm"
@@ -44,7 +75,8 @@ export function PersonalInfoForm() {
           name="email"
           label="Email Address"
           placeholder="devidjond45@gmail.com"
-          defaultValue="devidjond45@gmail.com"
+          value={form.email}
+          handleChange={handleChange}
           icon={<EmailIcon />}
           iconPosition="left"
           height="sm"
@@ -56,7 +88,8 @@ export function PersonalInfoForm() {
           name="username"
           label="Username"
           placeholder="devidjhon24"
-          defaultValue="devidjhon24"
+          value={form.username}
+          handleChange={handleChange}
           icon={<UserIcon />}
           iconPosition="left"
           height="sm"

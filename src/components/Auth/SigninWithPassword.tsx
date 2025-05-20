@@ -4,15 +4,19 @@ import Link from "next/link";
 import React, { useState } from "react";
 import InputGroup from "../FormElements/InputGroup";
 import { Checkbox } from "../FormElements/checkbox";
+import { useRouter } from "next/navigation";
+import { saveAuthUser } from "@/lib/services/auth";
 
 export default function SigninWithPassword() {
+  const router = useRouter();
   const [data, setData] = useState({
     email: process.env.NEXT_PUBLIC_DEMO_USER_MAIL || "",
     password: process.env.NEXT_PUBLIC_DEMO_USER_PASS || "",
     remember: false,
   });
-
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setData({
@@ -21,24 +25,43 @@ export default function SigninWithPassword() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    // You can remove this code block
     setLoading(true);
-
-    setTimeout(() => {
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: data.email, password: data.password }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        setSuccess(result.message);
+        saveAuthUser(result.data); // Guarda el usuario autenticado
+        setTimeout(() => {
+          router.push("/inventario");
+        }, 1000);
+      } else {
+        setError(result.message || "Error de autenticación");
+      }
+    } catch (err) {
+      setError("Error de conexión con el servidor");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit}>
+      {error ? <div className="mb-4 text-red-600">{error}</div> : null}
+      {success ? <div className="mb-4 text-green-600">{success}</div> : null}
       <InputGroup
         type="email"
-        label="Email"
+        label="Usuario"
         className="mb-4 [&_input]:py-[15px]"
-        placeholder="Enter your email"
+        placeholder="Ingresa tu usuario"
         name="email"
         handleChange={handleChange}
         value={data.email}
@@ -47,9 +70,9 @@ export default function SigninWithPassword() {
 
       <InputGroup
         type="password"
-        label="Password"
+        label="Contraseña"
         className="mb-5 [&_input]:py-[15px]"
-        placeholder="Enter your password"
+        placeholder="Ingresa tu contraseña"
         name="password"
         handleChange={handleChange}
         value={data.password}
@@ -58,7 +81,7 @@ export default function SigninWithPassword() {
 
       <div className="mb-6 flex items-center justify-between gap-2 py-2 font-medium">
         <Checkbox
-          label="Remember me"
+          label="Recordarme"
           name="remember"
           withIcon="check"
           minimal
@@ -75,7 +98,7 @@ export default function SigninWithPassword() {
           href="/auth/forgot-password"
           className="hover:text-primary dark:text-white dark:hover:text-primary"
         >
-          Forgot Password?
+          Contraseña olvidada?
         </Link>
       </div>
 
@@ -83,8 +106,9 @@ export default function SigninWithPassword() {
         <button
           type="submit"
           className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary p-4 font-medium text-white transition hover:bg-opacity-90"
+          disabled={loading}
         >
-          Sign In
+          Entrar
           {loading && (
             <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-t-transparent dark:border-primary dark:border-t-transparent" />
           )}
