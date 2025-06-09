@@ -1,9 +1,10 @@
-import { ProductosTabla } from "@/components/Tables/productos-tabla";
+
 import { TopProductsSkeleton } from "@/components/Tables/productos-tabla/skeleton";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import { Metadata } from "next";
 import { Suspense } from "react";
 import AddProductModal from "@/components/Modals/AddProductModal";
+import ProductosTabla from "@/components/Tables/productos-tabla";
 
 export const metadata: Metadata = {
   title: "Productos",

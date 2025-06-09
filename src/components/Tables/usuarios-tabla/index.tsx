@@ -23,7 +23,7 @@ export function UsuariosTabla() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/employees");
+      const res = await fetch("http://localhost:8000/api/employees");
       const json = await res.json();
       setData(json.data || []);
     } catch (e) {

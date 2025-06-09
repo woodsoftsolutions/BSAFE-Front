@@ -1,4 +1,4 @@
-import { ClientesTabla } from "@/components/Tables/clientes-tabla";
+import ClientesTabla from "@/components/Tables/clientes-tabla";
 import { TopProductsSkeleton } from "@/components/Tables/clientes-tabla/skeleton";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import { Metadata } from "next";

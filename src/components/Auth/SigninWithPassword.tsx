@@ -31,7 +31,7 @@ export default function SigninWithPassword() {
     setError(null);
     setSuccess(null);
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/login", {
+      const res = await fetch("http://localhost:8000/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: data.email, password: data.password }),
@@ -39,7 +39,11 @@ export default function SigninWithPassword() {
       const result = await res.json();
       if (result.success) {
         setSuccess(result.message);
-        saveAuthUser(result.data); // Guarda el usuario autenticado
+        // Guarda el usuario autenticado en localStorage
+        if (result.data) {
+          localStorage.setItem("user", JSON.stringify(result.data));
+        }
+        saveAuthUser(result.data); // Guarda el usuario autenticado (si usas otro método también)
         setTimeout(() => {
           router.push("/inventario");
         }, 1000);

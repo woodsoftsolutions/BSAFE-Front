@@ -1,16 +1,106 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 interface AddInventarioModalProps {
   triggerButtonClassName?: string;
+  onSuccess?: () => void;
 }
 
-const AddInventarioModal: React.FC<AddInventarioModalProps> = ({ triggerButtonClassName }) => {
+const AddInventarioModal: React.FC<AddInventarioModalProps> = ({ triggerButtonClassName, onSuccess }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const headerHiddenRef = useRef(false);
+  const [products, setProducts] = useState<any[]>([]);
+  const [warehouses, setWarehouses] = useState<any[]>([]);
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [form, setForm] = useState({
+    product_id: "",
+    warehouse_id: "",
+    employee_id: "",
+    quantity: "",
+    unit_cost: ""
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const openModal = () => setIsOpen(true);
   const closeModal = () => setIsOpen(false);
+
+  // Fetch options when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setError(null);
+      fetch("http://localhost:8000/api/products")
+        .then((res) => res.json())
+        .then((data) => setProducts(Array.isArray(data) ? data : (data.data || [])));
+      fetch("http://localhost:8000/api/warehouses")
+        .then((res) => res.json())
+        .then((data) => setWarehouses(Array.isArray(data) ? data : (data.data || [])));
+      fetch("http://localhost:8000/api/employees")
+        .then((res) => res.json())
+        .then((data) => setEmployees(Array.isArray(data) ? data : (data.data || [])));
+    }
+  }, [isOpen]);
+
+  // Hide header logic (unchanged)
+  useEffect(() => {
+    const header = document.querySelector("header");
+    if (isOpen) {
+      if (header && !headerHiddenRef.current) {
+        header.style.display = "none";
+        headerHiddenRef.current = true;
+      }
+    } else {
+      if (header && headerHiddenRef.current) {
+        header.style.display = "";
+        headerHiddenRef.current = false;
+      }
+    }
+    return () => {
+      if (header && headerHiddenRef.current) {
+        header.style.display = "";
+        headerHiddenRef.current = false;
+      }
+    };
+  }, [isOpen]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("http://localhost:8000/api/inventory-movements", {
+        method: "POST",
+        headers: {'Accept': 'application/json', "Content-Type": "application/json" },
+        body: JSON.stringify({
+          movement_type: "entry",
+          product_id: form.product_id,
+          warehouse_id: form.warehouse_id,
+          employee_id: form.employee_id,
+          quantity: Number(form.quantity),
+          minimum_stock: 0,
+          unit_cost: Number(form.unit_cost),
+        }),
+      });
+      if (res.ok) {
+        setForm({ product_id: "", warehouse_id: "", employee_id: "", quantity: "", unit_cost: "" });
+        closeModal();
+        if (onSuccess) onSuccess();
+      } else {
+        const data = await res.json();
+        setError(data.message || "Error al guardar el movimiento de inventario");
+      }
+    } catch (err: any) {
+      setError("Error de conexión con el servidor");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -27,55 +117,76 @@ const AddInventarioModal: React.FC<AddInventarioModalProps> = ({ triggerButtonCl
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
             <h2 className="text-xl font-bold mb-4">Añadir Inventario</h2>
-            <form>
+            <form onSubmit={handleSubmit}>
+              {error && <div className="mb-2 text-red-500">{error}</div>}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Nombre
-                </label>
-                <input
-                  type="text"
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Producto</label>
+                <select
+                  name="product_id"
+                  value={form.product_id}
+                  onChange={handleChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#24726b] focus:border-[#24726b] dark:bg-gray-700 dark:text-white"
-                  placeholder="Ingrese el nombre del Inventario"
-                />
+                  required
+                >
+                  <option value="">Seleccione un producto</option>
+                  {products.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Tipo
-                </label>
-                <input
-                  type="text"
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Almacén</label>
+                <select
+                  name="warehouse_id"
+                  value={form.warehouse_id}
+                  onChange={handleChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#24726b] focus:border-[#24726b] dark:bg-gray-700 dark:text-white"
-                  placeholder="Ingrese el tipo del Inventario"
-                />
+                  required
+                >
+                  <option value="">Seleccione un almacén</option>
+                  {warehouses.map((w) => (
+                    <option key={w.id} value={w.id}>{w.name}</option>
+                  ))}
+                </select>
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Minimo
-                </label>
-                <input
-                  type="text"
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Empleado</label>
+                <select
+                  name="employee_id"
+                  value={form.employee_id}
+                  onChange={handleChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#24726b] focus:border-[#24726b] dark:bg-gray-700 dark:text-white"
-                  placeholder="Ingrese el minimo del Inventario"
-                />
+                  required
+                >
+                  <option value="">Seleccione un empleado</option>
+                  {employees.map((e) => (
+                    <option key={e.id} value={e.id}>{e.first_name} {e.last_name}</option>
+                  ))}
+                </select>
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Precio
-                </label>
-                <input
-                  type="text"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#24726b] focus:border-[#24726b] dark:bg-gray-700 dark:text-white"
-                  placeholder="Ingrese el precio del Inventario"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Cantidad
-                </label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Cantidad</label>
                 <input
                   type="number"
+                  name="quantity"
+                  value={form.quantity}
+                  onChange={handleChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#24726b] focus:border-[#24726b] dark:bg-gray-700 dark:text-white"
-                  placeholder="Ingrese la cantidad del Inventario"
+                  placeholder="Ingrese la cantidad"
+                  required
+                />
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Precio</label>
+                <input
+                  type="number"
+                  name="unit_cost"
+                  value={form.unit_cost}
+                  onChange={handleChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#24726b] focus:border-[#24726b] dark:bg-gray-700 dark:text-white"
+                  placeholder="Ingrese el precio"
+                  required
                 />
               </div>
               <div className="flex justify-end gap-4">
@@ -83,14 +194,16 @@ const AddInventarioModal: React.FC<AddInventarioModalProps> = ({ triggerButtonCl
                   type="button"
                   onClick={closeModal}
                   className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg"
+                  disabled={loading}
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-[#99DFD8] hover:bg-[#24726b] text-white rounded-lg"
+                  disabled={loading}
                 >
-                  Guardar
+                  {loading ? "Guardando..." : "Guardar"}
                 </button>
               </div>
             </form>

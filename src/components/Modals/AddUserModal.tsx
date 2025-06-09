@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 interface AddUserModalProps {
   triggerButtonClassName?: string;
@@ -25,6 +25,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ triggerButtonClassName }) =
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const headerHiddenRef = useRef(false);
 
   const openModal = () => {
     setForm({ ...initialState });
@@ -83,7 +84,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ triggerButtonClassName }) =
         ...form,
         hire_date: form.hire_date ? form.hire_date : null,
       };
-      const res = await fetch("http://127.0.0.1:8000/api/employees", {
+      const res = await fetch("http://localhost:8000/api/employees", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -108,13 +109,22 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ triggerButtonClassName }) =
   // Nuevo: ocultar header al abrir/cerrar modal
   useEffect(() => {
     const header = document.querySelector("header");
-    if (isOpen && header) {
-      (header as HTMLElement).style.display = "none";
-    } else if (!isOpen && header) {
-      (header as HTMLElement).style.display = "";
+    if (isOpen) {
+      if (header && !headerHiddenRef.current) {
+        header.style.display = "none";
+        headerHiddenRef.current = true;
+      }
+    } else {
+      if (header && headerHiddenRef.current) {
+        header.style.display = "";
+        headerHiddenRef.current = false;
+      }
     }
     return () => {
-      if (header) (header as HTMLElement).style.display = "";
+      if (header && headerHiddenRef.current) {
+        header.style.display = "";
+        headerHiddenRef.current = false;
+      }
     };
   }, [isOpen]);
 
