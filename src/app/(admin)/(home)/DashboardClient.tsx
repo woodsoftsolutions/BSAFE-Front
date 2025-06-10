@@ -63,11 +63,11 @@ export default function DashboardClient({ searchParams }: { searchParams?: { sel
           <div className="text-gray-700 dark:text-gray-200 mt-2">Usuarios activos</div>
         </div>
       </div>
-      <Suspense fallback={<OverviewCardsSkeleton />}>
+      {/* <Suspense fallback={<OverviewCardsSkeleton />}>
         <OverviewCardsGroup />
-      </Suspense>
+      </Suspense> */}
 
-      <div className="mt-4 grid grid-cols-12 gap-4 md:mt-6 md:gap-6 2xl:mt-9 2xl:gap-7.5">
+      {/* <div className="mt-4 grid grid-cols-12 gap-4 md:mt-6 md:gap-6 2xl:mt-9 2xl:gap-7.5">
         <CotizacionesAprobadasClient
           key={extractTimeFrame("weeks_profit")}
           timeFrame={extractTimeFrame("weeks_profit")?.split(":")[1]}
@@ -76,7 +76,7 @@ export default function DashboardClient({ searchParams }: { searchParams?: { sel
         <ProductosInventarioClient
           className="col-span-12 xl:col-span-6"
         />
-      </div>
+      </div> */}
     </>
   );
 }
