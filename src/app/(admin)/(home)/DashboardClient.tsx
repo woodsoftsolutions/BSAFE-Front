@@ -6,6 +6,7 @@ import { Suspense, useEffect, useState } from "react";
 import { OverviewCardsGroup } from "./_components/overview-cards";
 import { OverviewCardsSkeleton } from "./_components/overview-cards/skeleton";
 
+
 export default function DashboardClient({ searchParams }: { searchParams?: { selected_time_frame?: string } }) {
   const selected_time_frame = searchParams?.selected_time_frame;
   const extractTimeFrame = createTimeFrameExtractor(selected_time_frame);

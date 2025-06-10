@@ -536,6 +536,8 @@ const CotizacionTabla = forwardRef((props, ref) => {
     fetchCotizaciones,
   }));
 
+  CotizacionTabla.displayName = "CotizacionTabla";
+
   if (loading) return <div className="p-4">Cargando cotizaciones...</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
 
