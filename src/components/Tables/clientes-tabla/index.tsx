@@ -7,6 +7,7 @@ import { EyeIcon } from "@/assets/icons";
 import ClientDetailsModal from "@/components/Modals/ClientDetailsModal";
 import EditClientModal from "@/components/Modals/EditClientModal";
 import AddClientModal from "@/components/Modals/AddClientModal";
+import { API_BASE_URL } from "@/lib/constants";
 
 export default function ClientesTabla() {
   const [clientes, setClientes] = useState<any[]>([]);
@@ -18,7 +19,7 @@ export default function ClientesTabla() {
 
   const fetchClientes = async () => {
     setLoading(true);
-    const res = await fetch("http://localhost:8000/api/customers");
+    const res = await fetch(`${API_BASE_URL}/api/customers`);
     const data = await res.json();
     // Ajuste para estructura { success, data: [...] }
     setClientes(Array.isArray(data) ? data : (data.data || data.results || []));

@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { TrashIcon, PencilSquareIcon, EyeIcon } from "@/assets/icons";
 import UserDetailsModal from "@/components/Modals/UserDetailsModal";
 import EditUserModal from "@/components/Modals/EditUserModal";
+import { API_BASE_URL } from "@/lib/constants";
 
 export function UsuariosTabla() {
   const [data, setData] = useState([]);
@@ -23,7 +24,7 @@ export function UsuariosTabla() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/api/employees");
+      const res = await fetch(`${API_BASE_URL}/api/employees`);
       const json = await res.json();
       setData(json.data || []);
     } catch (e) {

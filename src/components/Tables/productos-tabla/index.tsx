@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { TrashIcon, PencilSquareIcon } from "@/assets/icons";
 import { EyeIcon } from "@/assets/icons";
 import AddProductModal from "@/components/Modals/AddProductModal";
+import { API_BASE_URL } from "@/lib/constants";
 
 export default function ProductosTabla() {
   const [productos, setProductos] = useState<any[]>([]);
@@ -15,7 +16,7 @@ export default function ProductosTabla() {
 
   const fetchProductos = async () => {
     setLoading(true);
-    const res = await fetch("http://localhost:8000/api/products");
+    const res = await fetch(`${API_BASE_URL}/api/products`);
     const data = await res.json();
     setProductos(Array.isArray(data) ? data : (data.data || data.results || []));
     setLoading(false);
@@ -44,7 +45,7 @@ export default function ProductosTabla() {
   const handleDelete = async (id: number) => {
     if (!window.confirm("¿Seguro que deseas eliminar este producto?")) return;
     try {
-      const res = await fetch(`http://localhost:8000/api/delete/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/delete/${id}`, {
         method: "DELETE",
       });
       if (res.ok) {

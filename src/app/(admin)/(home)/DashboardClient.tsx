@@ -5,6 +5,7 @@ import { createTimeFrameExtractor } from "@/utils/timeframe-extractor";
 import { Suspense, useEffect, useState } from "react";
 import { OverviewCardsGroup } from "./_components/overview-cards";
 import { OverviewCardsSkeleton } from "./_components/overview-cards/skeleton";
+import { API_BASE_URL } from "@/lib/constants";
 
 
 export default function DashboardClient({ searchParams }: { searchParams?: { selected_time_frame?: string } }) {
@@ -20,7 +21,7 @@ export default function DashboardClient({ searchParams }: { searchParams?: { sel
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/orders/summary")
+    fetch(`${API_BASE_URL}/api/orders/summary`)
       .then((res) => res.json().then((data) => {
         setSummary(data.data);
         setLoading(false);

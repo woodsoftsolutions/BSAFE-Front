@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { TrashIcon, PencilSquareIcon } from "@/assets/icons";
 import { useEffect, useState } from "react";
 import React from "react";
+import { API_BASE_URL } from "@/lib/constants";
 
 export default function InventarioTabla() {
   const [movimientos, setMovimientos] = useState<any[]>([]);
@@ -25,7 +26,7 @@ export default function InventarioTabla() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("http://localhost:8000/api/inventory-balances");
+      const res = await fetch(`${API_BASE_URL}/api/inventory-balances`);
       if (!res.ok) throw new Error("Error al cargar movimientos de inventario");
       const data = await res.json();
       setMovimientos(Array.isArray(data) ? data : (data.data || data.results || []));
@@ -38,7 +39,7 @@ export default function InventarioTabla() {
 
   const fetchProductos = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/products");
+      const res = await fetch(`${API_BASE_URL}/api/products`);
       const data = await res.json();
       setProductos(Array.isArray(data.data) ? data.data : []);
     } catch (err) {
@@ -64,7 +65,7 @@ export default function InventarioTabla() {
     setHistorial(null);
     setHistorialProducto(producto);
     try {
-      const res = await fetch(`http://localhost:8000/api/inventory-movements/product/${producto.id}`);
+      const res = await fetch(`${API_BASE_URL}/api/inventory-movements/product/${producto.id}`);
       if (!res.ok) throw new Error("Error al cargar historial");
       const data = await res.json();
       setHistorial(Array.isArray(data.data) ? data.data : []);
