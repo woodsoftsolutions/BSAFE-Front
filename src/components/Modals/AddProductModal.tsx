@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { API_BASE_URL } from "@/lib/constants";
 
 interface AddProductModalProps {
   triggerButtonClassName?: string;
@@ -49,13 +50,13 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ triggerButtonClassNam
 
   useEffect(() => {
     if (isOpen) {
-      fetch("http://localhost:8000/api/categories")
+      fetch(`${API_BASE_URL}/api/categories`)
         .then((res) => res.json())
         .then((data) => {
           const cats = data?.data?.categorias || [];
           setCategories(cats);
         });
-      fetch("http://localhost:8000/api/units")
+      fetch(`${API_BASE_URL}/api/units`)
         .then((res) => res.json())
         .then((data) => {
           const unitsArr = data?.data || [];
@@ -76,7 +77,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ triggerButtonClassNam
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   try {
-    const res = await fetch("http://localhost:8000/api/products", {
+    const res = await fetch(`${API_BASE_URL}/api/products`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

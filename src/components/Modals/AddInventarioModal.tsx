@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { API_BASE_URL } from "@/lib/constants";
 
 interface AddInventarioModalProps {
   triggerButtonClassName?: string;
@@ -30,13 +31,13 @@ const AddInventarioModal: React.FC<AddInventarioModalProps> = ({ triggerButtonCl
   useEffect(() => {
     if (isOpen) {
       setError(null);
-      fetch("http://localhost:8000/api/products")
+      fetch(`${API_BASE_URL}/api/products`)
         .then((res) => res.json())
         .then((data) => setProducts(Array.isArray(data) ? data : (data.data || [])));
-      fetch("http://localhost:8000/api/warehouses")
+      fetch(`${API_BASE_URL}/api/warehouses`)
         .then((res) => res.json())
         .then((data) => setWarehouses(Array.isArray(data) ? data : (data.data || [])));
-      fetch("http://localhost:8000/api/employees")
+      fetch(`${API_BASE_URL}/api/employees`)
         .then((res) => res.json())
         .then((data) => setEmployees(Array.isArray(data) ? data : (data.data || [])));
     }
@@ -74,7 +75,7 @@ const AddInventarioModal: React.FC<AddInventarioModalProps> = ({ triggerButtonCl
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("http://localhost:8000/api/inventory-movements", {
+      const res = await fetch(`${API_BASE_URL}/api/inventory-movements`, {
         method: "POST",
         headers: {'Accept': 'application/json', "Content-Type": "application/json" },
         body: JSON.stringify({

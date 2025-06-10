@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import { API_BASE_URL } from "@/lib/constants";
 
 interface EditClientModalProps {
   client: any;
@@ -52,7 +53,7 @@ const EditClientModal: React.FC<EditClientModalProps> = ({ client, isOpen, onClo
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:8000/api/customers/${client.id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/customers/${client.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
