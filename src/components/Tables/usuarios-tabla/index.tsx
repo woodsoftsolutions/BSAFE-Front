@@ -132,7 +132,7 @@ export function UsuariosTabla() {
       {selectedUser && (
         <UserDetailsModal
           user={selectedUser}
-          isOpen={showDetails}
+          // isOpen={showDetails}
           onClose={() => setShowDetails(false)}
         />
       )}
