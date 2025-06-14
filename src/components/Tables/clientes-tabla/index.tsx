@@ -97,6 +97,7 @@ export default function ClientesTabla() {
         data={clientes}
         state={{ isLoading: loading }}
         enableRowActions
+        positionActionsColumn: 'last'
         renderRowActions={({ row }) => (
           <Box sx={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
             <IconButton onClick={() => handleDetails(row.original)} size="small">
