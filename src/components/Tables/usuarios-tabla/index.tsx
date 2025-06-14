@@ -119,10 +119,10 @@ export function UsuariosTabla() {
           },
         }}
         muiTableHeadCellProps={{
-          sx: { fontWeight: "bold", backgroundColor: "#f5f5f5" },
+          sx: { fontWeight: "bold", backgroundColor: "#f5f5f5", fontFamily: "Satoshi" },
         }}
         muiTableBodyCellProps={{
-          sx: { fontSize: "0.95rem" },
+          sx: { fontSize: "0.95rem", fontFamily: "Satoshi" },
         }}
         muiPaginationProps={{
           rowsPerPageOptions: [5, 10, 20],

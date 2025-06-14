@@ -142,7 +142,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ triggerButtonClassName }) =
       {/* Modal */}
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md" style="max-height: -webkit-fill-available; overflow-y: auto;">
             <h2 className="text-xl font-bold mb-4">Añadir Usuario</h2>
             <form onSubmit={handleSubmit}>
               {error && <div className="mb-2 text-red-600">{error}</div>}
