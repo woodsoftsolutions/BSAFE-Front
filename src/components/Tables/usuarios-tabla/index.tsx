@@ -144,12 +144,6 @@ export function UsuariosTabla() {
           onSuccess={handleEditSuccess}
         />
       )}
-      {showAddModal && (
-        <AddUserModal
-          onSuccess={handleAddUser}
-          triggerButtonClassName="hidden"
-        />
-      )}
     </Box>
   );
 }
