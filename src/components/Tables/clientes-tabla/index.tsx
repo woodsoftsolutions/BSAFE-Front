@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import MaterialReactTable from "material-react-table";
 import { Box, IconButton, Typography } from "@mui/material";
-import { Eye as EyeIcon, Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
+import { EyeIcon, EditIcon, DeleteIcon } from "@mui/icons-material";
 
 import ClientDetailsModal from "@/components/Modals/ClientDetailsModal";
 import EditClientModal from "@/components/Modals/EditClientModal";
