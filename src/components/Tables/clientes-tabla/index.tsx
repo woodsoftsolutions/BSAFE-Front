@@ -96,7 +96,9 @@ export default function ClientesTabla() {
         columns={columns}
         data={clientes}
         state={{ isLoading: loading }}
+        enableFullScreenToggle={false}
         enableRowActions
+        layoutMode="grid"
         positionActionsColumn="last"
         renderRowActions={({ row }) => (
           <Box sx={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
