@@ -139,7 +139,7 @@ export function UsuariosTabla() {
       {selectedUser && (
         <EditUserModal
           user={selectedUser}
-          isOpen={showEdit}
+          // isOpen={showEdit}
           onClose={() => setShowEdit(false)}
           onSave={handleSaveEdit}
         />
