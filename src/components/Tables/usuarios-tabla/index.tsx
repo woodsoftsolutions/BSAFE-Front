@@ -43,7 +43,7 @@ export function UsuariosTabla() {
     fetchData();
   };
 
-  const handleEdit = (client: any) => {
+  const handleEdit = (user: any) => {
     setSelectedUser(user);
     setShowEdit(true);
   };
