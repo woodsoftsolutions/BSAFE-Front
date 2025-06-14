@@ -129,7 +129,7 @@ export default function ClientesTabla() {
         muiTableBodyCellProps={{
           sx: { fontSize: "0.95rem" },
         }}
-        muiTablePaginationProps={{
+        muiPaginationProps={{
           rowsPerPageOptions: [5, 10, 20],
           labelRowsPerPage: "Filas por página:",
         }}
