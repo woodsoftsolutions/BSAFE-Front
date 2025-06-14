@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import MaterialReactTable from "material-react-table";
+import { MaterialReactTable } from 'material-react-table';
 import { Box, IconButton, Typography } from "@mui/material";
-import { EyeIcon, EditIcon, DeleteIcon } from "@mui/icons-material";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import ClientDetailsModal from "@/components/Modals/ClientDetailsModal";
 import EditClientModal from "@/components/Modals/EditClientModal";
@@ -98,7 +100,7 @@ export default function ClientesTabla() {
         renderRowActions={({ row }) => (
           <Box sx={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
             <IconButton onClick={() => handleDetails(row.original)} size="small">
-              <EyeIcon fontSize="small" />
+              <VisibilityIcon fontSize="small" />
             </IconButton>
             <IconButton onClick={() => handleEdit(row.original)} size="small">
               <EditIcon fontSize="small" />
