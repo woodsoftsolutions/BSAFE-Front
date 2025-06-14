@@ -60,7 +60,7 @@ export function UsuariosTabla() {
 
   const columns = [
     {
-      accessorKey: "name",
+      accessorKey: "user.name",
       header: "Usuario",
       Cell: ({ cell, row }: any) => (
         <Typography
@@ -72,7 +72,7 @@ export function UsuariosTabla() {
       ),
     },
     { accessorKey: "email", header: "Correo" },
-    { accessorKey: "cargo", header: "Cargo" },
+    { accessorKey: "position", header: "Cargo" },
     { accessorKey: "phone", header: "Teléfono" },
     {
       accessorKey: "active",
