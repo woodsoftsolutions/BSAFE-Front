@@ -132,9 +132,6 @@ export default function ClientesTabla() {
         muiPaginationProps={{
           rowsPerPageOptions: [5, 10, 20],
         }}
-        muiTableLocalization={{
-          rowsPerPage: 'Filas por página:',
-        }}
       />
 
       {selectedClient && (
