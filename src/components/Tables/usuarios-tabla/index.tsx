@@ -44,7 +44,7 @@ export function UsuariosTabla() {
   };
 
   const handleEdit = (client: any) => {
-    setSelectedClient(user);
+    setSelectedUser(user);
     setShowEdit(true);
   };
 
@@ -131,14 +131,14 @@ export function UsuariosTabla() {
 
       {selectedUser && (
         <UserDetailsModal
-          client={selectedUser}
+          user={selectedUser}
           isOpen={showDetails}
           onClose={() => setShowDetails(false)}
         />
       )}
       {selectedUser && (
         <EditUserModal
-          client={selectedUser}
+          user={selectedUser}
           isOpen={showEdit}
           onClose={() => setShowEdit(false)}
           onSave={handleSaveEdit}
