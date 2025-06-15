@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { API_BASE_URL } from "@/lib/constants";
 
 interface AddUserModalProps {
   triggerButtonClassName?: string;
@@ -84,7 +85,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ triggerButtonClassName }) =
         ...form,
         hire_date: form.hire_date ? form.hire_date : null,
       };
-      const res = await fetch("http://localhost:8000/api/employees", {
+      const res = await fetch(`${API_BASE_URL}/api/employees`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

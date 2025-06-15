@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { API_BASE_URL } from "@/lib/constants";
 
 interface AddCotizacionModalProps {
   triggerButtonClassName?: string;
@@ -37,13 +38,13 @@ const AddCotizacionModal: React.FC<AddCotizacionModalProps> = ({ triggerButtonCl
   useEffect(() => {
     if (isOpen) {
       setError(null);
-      fetch("http://localhost:8000/api/suppliers")
+      fetch(`${API_BASE_URL}/api/suppliers`)
         .then((res) => res.json())
         .then((data) => setSuppliers(Array.isArray(data) ? data : (data.data || [])));
-      fetch("http://localhost:8000/api/customers")
+      fetch(`${API_BASE_URL}/api/customers`)
         .then((res) => res.json())
         .then((data) => setCustomers(Array.isArray(data) ? data : (data.data || [])));
-      fetch("http://localhost:8000/api/products")
+      fetch(`${API_BASE_URL}/api/products`)
         .then((res) => res.json())
         .then((data) => setProducts(Array.isArray(data) ? data : (data.data || [])));
       // Obtener usuario logueado y buscar su employee_id real
@@ -52,7 +53,7 @@ const AddCotizacionModal: React.FC<AddCotizacionModalProps> = ({ triggerButtonCl
       const today = new Date();
       const todayStr = today.toISOString().split('T')[0];
       if (user && user.email) {
-        fetch("http://localhost:8000/api/employees")
+        fetch(`${API_BASE_URL}/api/employees`)
           .then((res) => res.json())
           .then((data) => {
             const employees = Array.isArray(data) ? data : (data.data || []);
@@ -151,7 +152,7 @@ const AddCotizacionModal: React.FC<AddCotizacionModalProps> = ({ triggerButtonCl
         const now = new Date();
         order_number = `ORD-${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}-${Math.floor(Math.random()*10000)}`;
       }
-      const res = await fetch("http://localhost:8000/api/orders", {
+      const res = await fetch(`${API_BASE_URL}/api/orders`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

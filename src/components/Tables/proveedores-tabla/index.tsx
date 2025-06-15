@@ -3,6 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { TrashIcon, PencilSquareIcon } from "@/assets/icons";
 import { EyeIcon } from "@/assets/icons";
 import AddProveedoresModal from "@/components/Modals/AddProveedoresModal";
+import { API_BASE_URL } from "@/lib/constants";
 
 export default function ProveedoresTabla() {
   const [proveedores, setProveedores] = useState<any[]>([]);
@@ -13,7 +14,7 @@ export default function ProveedoresTabla() {
 
   const fetchProveedores = async () => {
     setLoading(true);
-    const res = await fetch("http://localhost:8000/api/suppliers");
+    const res = await fetch(`${API_BASE_URL}/api/suppliers`);
     const data = await res.json();
     setProveedores(Array.isArray(data) ? data : (data.data || []));
     setLoading(false);
@@ -38,7 +39,7 @@ export default function ProveedoresTabla() {
   const handleDelete = async (id: number) => {
     if (!window.confirm("¿Seguro que deseas eliminar este proveedor?")) return;
     try {
-      const res = await fetch(`http://localhost:8000/api/delete/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/delete/${id}`, {
         method: "DELETE",
       });
       if (res.ok) {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_BASE_URL } from "@/lib/constants";
 
 interface EditUserModalProps {
   user: any;
@@ -98,7 +99,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSuccess 
         hire_date: form.hire_date ? form.hire_date : null,
       };
       // PATCH para actualizar usuario
-      const res = await fetch(`http://localhost:8000/api/employees/${user.id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/employees/${user.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

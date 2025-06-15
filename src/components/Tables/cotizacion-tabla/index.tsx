@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { TrashIcon, PencilSquareIcon } from "@/assets/icons";
+import { API_BASE_URL } from "@/lib/constants";
 
 interface EditCotizacionModalProps {
   cotizacion: any;
@@ -37,13 +38,13 @@ function EditCotizacionModal({ cotizacion, isOpen, onClose, onSave, suppliers, c
 
   useEffect(() => {
     if (isOpen) {
-      fetch("http://localhost:8000/api/products")
+      fetch(`${API_BASE_URL}/api/products`)
         .then((res) => res.json())
         .then((data) => setProducts(Array.isArray(data) ? data : (data.data || [])));
       // Obtener usuario logueado y buscar su employee_id real
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       if (user && user.id) {
-        fetch("http://localhost:8000/api/employees")
+        fetch(`${API_BASE_URL}/api/employees`)
           .then((res) => res.json())
           .then((data) => {
             const empleados = Array.isArray(data) ? data : (data.data || []);
@@ -105,7 +106,7 @@ function EditCotizacionModal({ cotizacion, isOpen, onClose, onSave, suppliers, c
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`http://localhost:8000/api/orders/${cotizacion.id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/orders/${cotizacion.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -356,7 +357,7 @@ const CotizacionTabla = forwardRef((props, ref) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("http://localhost:8000/api/orders");
+      const res = await fetch(`${API_BASE_URL}/api/orders`);
       if (!res.ok) throw new Error("Error al cargar cotizaciones");
       const data = await res.json();
       setCotizaciones(Array.isArray(data) ? data : (data.data || []));
@@ -369,9 +370,9 @@ const CotizacionTabla = forwardRef((props, ref) => {
 
   const fetchSelects = async () => {
     const [sup, cus, emp] = await Promise.all([
-      fetch("http://localhost:8000/api/suppliers").then((res) => res.json()),
-      fetch("http://localhost:8000/api/customers").then((res) => res.json()),
-      fetch("http://localhost:8000/api/employees").then((res) => res.json()),
+      fetch(`${API_BASE_URL}/api/suppliers`).then((res) => res.json()),
+      fetch(`${API_BASE_URL}/api/customers`).then((res) => res.json()),
+      fetch(`${API_BASE_URL}/api/employees`).then((res) => res.json()),
     ]);
     setSuppliers(Array.isArray(sup) ? sup : (sup.data || []));
     setCustomers(Array.isArray(cus) ? cus : (cus.data || []));
@@ -397,7 +398,7 @@ const CotizacionTabla = forwardRef((props, ref) => {
   const handleDelete = async (id: number) => {
     if (!window.confirm("¿Seguro que deseas eliminar esta cotización?")) return;
     try {
-      const res = await fetch(`http://localhost:8000/api/orders/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/orders/${id}`, {
         method: "DELETE",
       });
       if (res.ok) {
@@ -418,7 +419,7 @@ const CotizacionTabla = forwardRef((props, ref) => {
   // Acción para aprobar cotización
   const handleApprove = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/orders/${id}/approve`, {
+      const res = await fetch(`${API_BASE_URL}/api/orders/${id}/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
@@ -436,7 +437,7 @@ const CotizacionTabla = forwardRef((props, ref) => {
   // Acción para rechazar cotización
   const handleReject = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/orders/${id}/reject`, {
+      const res = await fetch(`${API_BASE_URL}/api/orders/${id}/reject`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
@@ -454,7 +455,7 @@ const CotizacionTabla = forwardRef((props, ref) => {
   // Cambia la función del botón para obtener los productos desde la API
   const handleVerProductos = async (cot: any) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/orders/${cot.id}`);
+      const res = await fetch(`${API_BASE_URL}/api/orders/${cot.id}`);
       if (!res.ok) throw new Error("Error al obtener productos de la cotización");
       const data = await res.json();
       // data.items debe contener los productos asociados
@@ -535,6 +536,8 @@ const CotizacionTabla = forwardRef((props, ref) => {
   useImperativeHandle(ref, () => ({
     fetchCotizaciones,
   }));
+
+  CotizacionTabla.displayName = "CotizacionTabla";
 
   if (loading) return <div className="p-4">Cargando cotizaciones...</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;

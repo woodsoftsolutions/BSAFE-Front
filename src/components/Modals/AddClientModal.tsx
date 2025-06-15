@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { API_BASE_URL } from "@/lib/constants";
 
 interface AddClientModalProps {
   triggerButtonClassName?: string;
@@ -39,7 +40,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ triggerButtonClassName,
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/api/customers/", {
+      const res = await fetch(`${API_BASE_URL}/api/customers/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

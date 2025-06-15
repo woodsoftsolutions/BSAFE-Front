@@ -6,6 +6,7 @@ import InputGroup from "../FormElements/InputGroup";
 import { Checkbox } from "../FormElements/checkbox";
 import { useRouter } from "next/navigation";
 import { saveAuthUser } from "@/lib/services/auth";
+import { API_BASE_URL } from "@/lib/constants";
 
 export default function SigninWithPassword() {
   const router = useRouter();
@@ -31,7 +32,7 @@ export default function SigninWithPassword() {
     setError(null);
     setSuccess(null);
     try {
-      const res = await fetch("http://localhost:8000/api/login", {
+      const res = await fetch(`${API_BASE_URL}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: data.email, password: data.password }),

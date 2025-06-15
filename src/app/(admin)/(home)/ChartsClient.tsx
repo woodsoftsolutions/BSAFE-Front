@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "@/lib/constants";
 import { useEffect, useState } from "react";
 
 function CotizacionesAprobadasClient({ className, timeFrame }: { className?: string; timeFrame?: string }) {
@@ -6,7 +7,7 @@ function CotizacionesAprobadasClient({ className, timeFrame }: { className?: str
 
   useEffect(() => {
     setLoading(true);
-    fetch(`http://localhost:8000/api/charts/weeks-profit?timeFrame=${timeFrame || "2025"}`)
+    fetch(`${API_BASE_URL}/api/charts/weeks-profit?timeFrame=${timeFrame || "2025"}`)
       .then((res) => res.json())
       .then((data) => setData(data.data))
       .finally(() => setLoading(false));
@@ -31,7 +32,7 @@ function ProductosInventarioClient({ className }: { className?: string }) {
 
   useEffect(() => {
     setLoading(true);
-    fetch("http://localhost:8000/api/inventory-balances")
+    fetch(`${API_BASE_URL}/api/inventory-balances`)
       .then((res) => res.json())
       .then((data) => setData(data.data))
       .finally(() => setLoading(false));
