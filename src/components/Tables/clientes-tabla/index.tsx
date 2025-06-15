@@ -117,7 +117,6 @@ export default function ClientesTabla() {
           sx: {
             borderRadius: "10px",
             overflow: "hidden",
-            backgroundColor: "#fff",
           },
         }}
         muiTableContainerProps={{
@@ -126,7 +125,7 @@ export default function ClientesTabla() {
           },
         }}
         muiTableHeadCellProps={{
-          sx: { fontWeight: "bold", backgroundColor: "#f5f5f5", fontFamily: "Satoshi" },
+          sx: { fontWeight: "bold", fontFamily: "Satoshi" },
         }}
         muiTableBodyCellProps={{
           sx: { fontSize: "0.95rem",fontFamily: "Satoshi"},
