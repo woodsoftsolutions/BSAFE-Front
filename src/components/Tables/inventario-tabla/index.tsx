@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { TrashIcon, PencilSquareIcon } from "@/assets/icons";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import React from "react";
 import { API_BASE_URL } from "@/lib/constants";
 
@@ -21,15 +21,27 @@ export default function InventarioTabla() {
   const [historialLoading, setHistorialLoading] = useState(false);
   const [historialError, setHistorialError] = useState<string | null>(null);
   const [historialProducto, setHistorialProducto] = useState<any | null>(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const fetchMovimientos = async () => {
+  const cacheRef = useRef<{ [key: string]: any[] }>({});
+
+  const fetchMovimientos = async (pageIndex = 0, pageSize = 10) => {
+    const cacheKey = `${pageIndex}_${pageSize}`;
+    if (cacheRef.current[cacheKey]) {
+      setMovimientos(cacheRef.current[cacheKey]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/inventory-balances`);
+      const res = await fetch(`${API_BASE_URL}/api/inventory-balances/paginated?per_page=${pageSize}&page=${pageIndex + 1}`);
       if (!res.ok) throw new Error("Error al cargar movimientos de inventario");
       const data = await res.json();
-      setMovimientos(Array.isArray(data) ? data : (data.data || data.results || []));
+      const movimientosData = Array.isArray(data.data) ? data.data : data.data?.data || [];
+      cacheRef.current[cacheKey] = movimientosData;
+      setMovimientos(movimientosData);
     } catch (err: any) {
       setError(err.message || "Error desconocido");
     } finally {
@@ -48,9 +60,9 @@ export default function InventarioTabla() {
   };
 
   useEffect(() => {
-    fetchMovimientos();
+    fetchMovimientos(page, rowsPerPage);
     fetchProductos();
-  }, []);
+  }, [page, rowsPerPage]);
 
   // Helper to get status
   const getStatus = (cantidad: number, minimo: number) => {
@@ -173,6 +185,11 @@ export default function InventarioTabla() {
           })}
         </TableBody>
       </Table>
+      <div className="flex justify-end mt-4">
+        <button disabled={page === 0} onClick={() => setPage(page - 1)}>Anterior</button>
+        <span className="mx-2">Página {page + 1}</span>
+        <button onClick={() => setPage(page + 1)}>Siguiente</button>
+      </div>
       {/* TODO: Add modals for edit/details if needed, matching other modules */}
     </div>
   );

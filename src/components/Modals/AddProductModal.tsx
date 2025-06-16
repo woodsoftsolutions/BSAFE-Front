@@ -131,7 +131,22 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ triggerButtonClassNam
                   value={form.code}
                   onChange={handleChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#24726b] focus:border-[#24726b] dark:bg-gray-700 dark:text-white"
-                  placeholder="Ingrese el código del producto"
+                  placeholder="Código del producto"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Nombre
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#24726b] focus:border-[#24726b] dark:bg-gray-700 dark:text-white"
+                  placeholder="Nombre del producto"
+                  required
                 />
               </div>
               <div className="mb-4">
@@ -145,19 +160,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ triggerButtonClassNam
                   onChange={handleChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#24726b] focus:border-[#24726b] dark:bg-gray-700 dark:text-white"
                   placeholder="Ingrese la descripción del producto"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Marca
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#24726b] focus:border-[#24726b] dark:bg-gray-700 dark:text-white"
-                  placeholder="Ingrese la marca del producto"
                 />
               </div>
               <div className="mb-4">

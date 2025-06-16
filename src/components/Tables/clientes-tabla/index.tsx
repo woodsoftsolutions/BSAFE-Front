@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { MaterialReactTable } from 'material-react-table';
 import { Box, IconButton, Typography } from "@mui/material";
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -19,18 +19,29 @@ export default function ClientesTabla() {
   const [showDetails, setShowDetails] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const cacheRef = useRef<{ [key: string]: any[] }>({});
 
-  const fetchClientes = async () => {
+  const fetchClientes = async (pageIndex = 0, pageSize = 10) => {
+    const cacheKey = `${pageIndex}_${pageSize}`;
+    if (cacheRef.current[cacheKey]) {
+      setClientes(cacheRef.current[cacheKey]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    const res = await fetch(`${API_BASE_URL}/api/customers`);
+    const res = await fetch(`${API_BASE_URL}/api/customers/paginated?per_page=${pageSize}&page=${pageIndex + 1}`);
     const data = await res.json();
-    setClientes(Array.isArray(data) ? data : data.data || data.results || []);
+    const clientesData = Array.isArray(data.data) ? data.data : data.data?.data || [];
+    cacheRef.current[cacheKey] = clientesData;
+    setClientes(clientesData);
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchClientes();
-  }, []);
+    fetchClientes(page, rowsPerPage);
+  }, [page, rowsPerPage]);
 
   const handleEdit = (client: any) => {
     setSelectedClient(client);
@@ -44,11 +55,11 @@ export default function ClientesTabla() {
 
   const handleSaveEdit = () => {
     setShowEdit(false);
-    fetchClientes();
+    fetchClientes(page, rowsPerPage);
   };
 
   const handleAddClient = () => {
-    fetchClientes();
+    fetchClientes(page, rowsPerPage);
     setShowAddModal(false);
   };
 
@@ -95,23 +106,16 @@ export default function ClientesTabla() {
       <MaterialReactTable
         columns={columns}
         data={clientes}
-        state={{ isLoading: loading }}
+        state={{ isLoading: loading, pagination: { pageIndex: page, pageSize: rowsPerPage } }}
         enableFullScreenToggle={false}
         enableRowActions
         positionActionsColumn="last"
-        renderRowActions={({ row }) => (
-          <Box sx={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
-            <IconButton onClick={() => handleDetails(row.original)} size="small">
-              <VisibilityIcon fontSize="small" />
-            </IconButton>
-            <IconButton onClick={() => handleEdit(row.original)} size="small">
-              <EditIcon fontSize="small" />
-            </IconButton>
-            <IconButton color="error" size="small">
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Box>
-        )}
+        onPaginationChange={(updater) => {
+          // updater puede ser un objeto o una función
+          const next = typeof updater === 'function' ? updater({ pageIndex: page, pageSize: rowsPerPage }) : updater;
+          setPage(next.pageIndex);
+          setRowsPerPage(next.pageSize);
+        }}
         muiTablePaperProps={{
           elevation: 2,
           sx: {

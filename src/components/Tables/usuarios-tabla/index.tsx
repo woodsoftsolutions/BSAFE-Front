@@ -3,7 +3,7 @@
 import UserDetailsModal from "@/components/Modals/UserDetailsModal";
 import EditUserModal from "@/components/Modals/EditUserModal";
 import AddUserModal from "@/components/Modals/AddUserModal";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { MaterialReactTable } from 'material-react-table';
 import { Box, IconButton, Typography } from "@mui/material";
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -12,20 +12,36 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { API_BASE_URL } from "@/lib/constants";
 
 export function UsuariosTabla() {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const cacheRef = useRef<{ [key: string]: any[] }>({});
 
   // Refactor: fetchData como función reutilizable
-  const fetchData = async () => {
+  const fetchData = async (pageIndex = 0, pageSize = 10) => {
+    const cacheKey = `${pageIndex}_${pageSize}`;
+    if (cacheRef.current[cacheKey]) {
+      setData(cacheRef.current[cacheKey]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/employees`);
+      const res = await fetch(`${API_BASE_URL}/api/employees/paginated?per_page=${pageSize}&page=${pageIndex + 1}`);
       const json = await res.json();
-      setData(json.data || []);
+      const usersData = Array.isArray(json.data)
+        ? json.data
+        : Array.isArray(json.data?.data)
+          ? json.data.data
+          : [];
+      cacheRef.current[cacheKey] = usersData;
+      setData(usersData);
     } catch (e) {
       setData([]);
     } finally {
@@ -34,12 +50,12 @@ export function UsuariosTabla() {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData(page, rowsPerPage);
+  }, [page, rowsPerPage]);
 
   // Handler para refrescar datos tras edición
   const handleEditSuccess = () => {
-    fetchData();
+    fetchData(page, rowsPerPage);
   };
 
   const handleEdit = (user: any) => {
@@ -53,7 +69,7 @@ export function UsuariosTabla() {
   };
 
   const handleAddUser = () => {
-    fetchData();
+    fetchData(page, rowsPerPage);
     setShowAddModal(false);
   };
 
@@ -87,10 +103,15 @@ export function UsuariosTabla() {
       <MaterialReactTable
         columns={columns}
         data={data}
-        state={{ isLoading: loading }}
+        state={{ isLoading: loading, pagination: { pageIndex: page, pageSize: rowsPerPage } }}
         enableFullScreenToggle={false}
         enableRowActions
         positionActionsColumn="last"
+        onPaginationChange={(updater) => {
+          const next = typeof updater === 'function' ? updater({ pageIndex: page, pageSize: rowsPerPage }) : updater;
+          setPage(next.pageIndex);
+          setRowsPerPage(next.pageSize);
+        }}
         renderRowActions={({ row }) => (
           <Box sx={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
             <IconButton onClick={() => handleDetails(row.original)} size="small">

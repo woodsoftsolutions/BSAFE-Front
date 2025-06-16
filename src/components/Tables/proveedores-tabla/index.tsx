@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TrashIcon, PencilSquareIcon } from "@/assets/icons";
 import { EyeIcon } from "@/assets/icons";
@@ -11,18 +11,29 @@ export default function ProveedoresTabla() {
   const [selectedProveedor, setSelectedProveedor] = useState<any | null>(null);
   const [showEdit, setShowEdit] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const cacheRef = useRef<{ [key: string]: any[] }>({});
 
-  const fetchProveedores = async () => {
+  const fetchProveedores = async (pageIndex = 0, pageSize = 10) => {
+    const cacheKey = `${pageIndex}_${pageSize}`;
+    if (cacheRef.current[cacheKey]) {
+      setProveedores(cacheRef.current[cacheKey]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    const res = await fetch(`${API_BASE_URL}/api/suppliers`);
+    const res = await fetch(`${API_BASE_URL}/api/suppliers/paginated?per_page=${pageSize}&page=${pageIndex + 1}`);
     const data = await res.json();
-    setProveedores(Array.isArray(data) ? data : (data.data || []));
+    const proveedoresData = Array.isArray(data.data) ? data.data : data.data?.data || [];
+    cacheRef.current[cacheKey] = proveedoresData;
+    setProveedores(proveedoresData);
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchProveedores();
-  }, []);
+    fetchProveedores(page, rowsPerPage);
+  }, [page, rowsPerPage]);
 
   const handleEdit = (proveedor: any) => {
     setSelectedProveedor(proveedor);
@@ -34,7 +45,7 @@ export default function ProveedoresTabla() {
   };
   const handleSaveEdit = () => {
     setShowEdit(false);
-    fetchProveedores();
+    fetchProveedores(page, rowsPerPage);
   };
   const handleDelete = async (id: number) => {
     if (!window.confirm("¿Seguro que deseas eliminar este proveedor?")) return;
@@ -43,7 +54,7 @@ export default function ProveedoresTabla() {
         method: "DELETE",
       });
       if (res.ok) {
-        fetchProveedores();
+        fetchProveedores(page, rowsPerPage);
       } else {
         alert("Error al eliminar el proveedor");
       }
@@ -104,6 +115,11 @@ export default function ProveedoresTabla() {
           ))}
         </TableBody>
       </Table>
+      <div className="flex justify-end mt-4">
+        <button disabled={page === 0} onClick={() => setPage(page - 1)}>Anterior</button>
+        <span className="mx-2">Página {page + 1}</span>
+        <button onClick={() => setPage(page + 1)}>Siguiente</button>
+      </div>
       {/*
       {selectedProveedor && (
         <EditProveedorModal proveedor={selectedProveedor} isOpen={showEdit} onClose={() => setShowEdit(false)} onSave={handleSaveEdit} />

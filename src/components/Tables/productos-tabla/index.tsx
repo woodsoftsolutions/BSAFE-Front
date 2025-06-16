@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TrashIcon, PencilSquareIcon } from "@/assets/icons";
 import { EyeIcon } from "@/assets/icons";
@@ -13,18 +13,29 @@ export default function ProductosTabla() {
   const [showDetails, setShowDetails] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const cacheRef = useRef<{ [key: string]: any[] }>({});
 
-  const fetchProductos = async () => {
+  const fetchProductos = async (pageIndex = 0, pageSize = 10) => {
+    const cacheKey = `${pageIndex}_${pageSize}`;
+    if (cacheRef.current[cacheKey]) {
+      setProductos(cacheRef.current[cacheKey]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    const res = await fetch(`${API_BASE_URL}/api/products`);
+    const res = await fetch(`${API_BASE_URL}/api/products/paginated?per_page=${pageSize}&page=${pageIndex + 1}`);
     const data = await res.json();
-    setProductos(Array.isArray(data) ? data : (data.data || data.results || []));
+    const productosData = Array.isArray(data.data) ? data.data : data.data?.data || [];
+    cacheRef.current[cacheKey] = productosData;
+    setProductos(productosData);
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchProductos();
-  }, []);
+    fetchProductos(page, rowsPerPage);
+  }, [page, rowsPerPage]);
 
   const handleEdit = (product: any) => {
     setSelectedProduct(product);
@@ -118,6 +129,11 @@ export default function ProductosTabla() {
           ))}
         </TableBody>
       </Table>
+      <div className="flex justify-end mt-4">
+        <button disabled={page === 0} onClick={() => setPage(page - 1)}>Anterior</button>
+        <span className="mx-2">Página {page + 1}</span>
+        <button onClick={() => setPage(page + 1)}>Siguiente</button>
+      </div>
       {/*
       {selectedProduct && (
         <ProductDetailsModal product={selectedProduct} isOpen={showDetails} onClose={() => setShowDetails(false)} />

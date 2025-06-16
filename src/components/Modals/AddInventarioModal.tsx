@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { API_BASE_URL } from "@/lib/constants";
+import { useRouter } from "next/navigation";
 
 interface AddInventarioModalProps {
   triggerButtonClassName?: string;
@@ -23,6 +24,7 @@ const AddInventarioModal: React.FC<AddInventarioModalProps> = ({ triggerButtonCl
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const openModal = () => setIsOpen(true);
   const closeModal = () => setIsOpen(false);
@@ -67,6 +69,16 @@ const AddInventarioModal: React.FC<AddInventarioModalProps> = ({ triggerButtonCl
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    if (name === "product_id" && value === "new") {
+      closeModal();
+      router.push("/productos");
+      return;
+    }
+    if (name === "employee_id" && value === "new") {
+      closeModal();
+      router.push("/usuarios");
+      return;
+    }
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -130,6 +142,7 @@ const AddInventarioModal: React.FC<AddInventarioModalProps> = ({ triggerButtonCl
                   required
                 >
                   <option value="">Seleccione un producto</option>
+                  <option value="new">+ Nuevo producto</option>
                   {products.map((p) => (
                     <option key={p.id} value={p.id}>{p.name}</option>
                   ))}
@@ -160,6 +173,7 @@ const AddInventarioModal: React.FC<AddInventarioModalProps> = ({ triggerButtonCl
                   required
                 >
                   <option value="">Seleccione un empleado</option>
+                  <option value="new">+ Nuevo empleado</option>
                   {employees.map((e) => (
                     <option key={e.id} value={e.id}>{e.first_name} {e.last_name}</option>
                   ))}

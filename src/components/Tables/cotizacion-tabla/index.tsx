@@ -1,6 +1,6 @@
 "use client";
 
-import React, { forwardRef, useImperativeHandle, useEffect, useState } from "react";
+import React, { forwardRef, useImperativeHandle, useEffect, useState, useRef } from "react";
 import {
   Table,
   TableBody,
@@ -352,17 +352,27 @@ const CotizacionTabla = forwardRef((props, ref) => {
   const [showProductos, setShowProductos] = useState(false);
   const [productosCotizacion, setProductosCotizacion] = useState([]);
   const [nombreCotizacion, setNombreCotizacion] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const cacheRef = useRef<{ [key: string]: any[] }>({});
 
-  const fetchCotizaciones = async () => {
+  const fetchCotizaciones = async (pageIndex = 0, pageSize = 10) => {
+    const cacheKey = `${pageIndex}_${pageSize}`;
+    if (cacheRef.current[cacheKey]) {
+      setCotizaciones(cacheRef.current[cacheKey]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/orders`);
+      const res = await fetch(`${API_BASE_URL}/api/orders/paginated?per_page=${pageSize}&page=${pageIndex + 1}`);
       if (!res.ok) throw new Error("Error al cargar cotizaciones");
       const data = await res.json();
-      setCotizaciones(Array.isArray(data) ? data : (data.data || []));
-    } catch (err: any) {
-      setError(err.message || "Error desconocido");
+      const cotizacionesData = Array.isArray(data.data) ? data.data : data.data?.data || [];
+      cacheRef.current[cacheKey] = cotizacionesData;
+      setCotizaciones(cotizacionesData);
+    } catch (err) {
+      setError("Error al cargar cotizaciones");
     } finally {
       setLoading(false);
     }
@@ -380,9 +390,9 @@ const CotizacionTabla = forwardRef((props, ref) => {
   };
 
   useEffect(() => {
-    fetchCotizaciones();
+    fetchCotizaciones(page, rowsPerPage);
     fetchSelects();
-  }, []);
+  }, [page, rowsPerPage]);
 
   const handleEdit = (cot: any) => {
     setEditCotizacion(cot);
@@ -392,7 +402,7 @@ const CotizacionTabla = forwardRef((props, ref) => {
   const handleSaveEdit = () => {
     setShowEdit(false);
     setEditCotizacion(null);
-    fetchCotizaciones();
+    fetchCotizaciones(page, rowsPerPage);
   };
 
   const handleDelete = async (id: number) => {
@@ -402,7 +412,7 @@ const CotizacionTabla = forwardRef((props, ref) => {
         method: "DELETE",
       });
       if (res.ok) {
-        fetchCotizaciones();
+        fetchCotizaciones(page, rowsPerPage);
       } else {
         alert("Error al eliminar la cotización");
       }
@@ -425,7 +435,7 @@ const CotizacionTabla = forwardRef((props, ref) => {
       });
       if (res.ok) {
         setAlerta("La cotización se aprobó correctamente.");
-        fetchCotizaciones();
+        fetchCotizaciones(page, rowsPerPage);
       } else {
         alert("Error al aprobar la cotización");
       }
@@ -443,7 +453,7 @@ const CotizacionTabla = forwardRef((props, ref) => {
       });
       if (res.ok) {
         setAlerta("La cotización se canceló correctamente.");
-        fetchCotizaciones();
+        fetchCotizaciones(page, rowsPerPage);
       } else {
         alert("Error al rechazar la cotización");
       }
@@ -574,6 +584,11 @@ const CotizacionTabla = forwardRef((props, ref) => {
       {tab === 'pending' && renderTabla(cotizacionesPendientes, 'pending_approval', 'bg-[#FFA70B]/[0.08] text-[#FFA70B]')}
       {tab === 'approved' && renderTabla(cotizacionesAprobadas, 'approved', 'bg-[#219653]/[0.08] text-[#219653]')}
       {tab === 'cancelled' && renderTabla(cotizacionesRechazadas, 'cancelled', 'bg-[#D34053]/[0.08] text-[#D34053]')}
+      <div className="flex justify-end mt-4">
+        <button disabled={page === 0} onClick={() => setPage(page - 1)}>Anterior</button>
+        <span className="mx-2">Página {page + 1}</span>
+        <button onClick={() => setPage(page + 1)}>Siguiente</button>
+      </div>
       <ProductosModal
         isOpen={showProductos}
         onClose={() => setShowProductos(false)}

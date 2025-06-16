@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { API_BASE_URL } from "@/lib/constants";
+import { useRouter } from "next/navigation";
 
 interface AddCotizacionModalProps {
   triggerButtonClassName?: string;
@@ -18,7 +19,7 @@ const AddCotizacionModal: React.FC<AddCotizacionModalProps> = ({ triggerButtonCl
   const [form, setForm] = useState({
     order_number: "",
     order_type: "quotation",
-    status: "draft",
+    status: "pending_approval",
     supplier_id: "",
     customer_id: "",
     employee_id: "",
@@ -31,6 +32,7 @@ const AddCotizacionModal: React.FC<AddCotizacionModalProps> = ({ triggerButtonCl
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState(1);
+  const router = useRouter();
 
   const openModal = () => setIsOpen(true);
   const closeModal = () => setIsOpen(false);
@@ -105,11 +107,21 @@ const AddCotizacionModal: React.FC<AddCotizacionModalProps> = ({ triggerButtonCl
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    if (name === "customer_id" && value === "new") {
+      closeModal();
+      router.push("/clientes");
+      return;
+    }
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleItemChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    if (name === "product_id" && value === "new") {
+      closeModal();
+      router.push("/productos");
+      return;
+    }
     setItemForm((prev) => ({ ...prev, [name]: value }));
     if (name === 'quantity' || name === 'unit_price') {
       const quantity = name === 'quantity' ? value : itemForm.quantity;
@@ -140,6 +152,7 @@ const AddCotizacionModal: React.FC<AddCotizacionModalProps> = ({ triggerButtonCl
     setLoading(true);
     setError(null);
     // Validar que haya al menos un producto
+    console.log("Submitting form with items:", items);
     if (items.length === 0) {
       setError("Debe agregar al menos un producto a la cotización.");
       setLoading(false);
@@ -147,11 +160,13 @@ const AddCotizacionModal: React.FC<AddCotizacionModalProps> = ({ triggerButtonCl
     }
     try {
       // Generar número de orden automáticamente si está vacío
+      console.log("Form data before submission:", form);
       let order_number = form.order_number;
       if (!order_number) {
         const now = new Date();
         order_number = `ORD-${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}-${Math.floor(Math.random()*10000)}`;
       }
+      console.log("Generated order number:", order_number);
       const res = await fetch(`${API_BASE_URL}/api/orders`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -169,7 +184,7 @@ const AddCotizacionModal: React.FC<AddCotizacionModalProps> = ({ triggerButtonCl
         setForm({
           order_number: "",
           order_type: "quotation",
-          status: "draft",
+          status: "pending_approval",
           supplier_id: "",
           customer_id: "",
           employee_id: "",
@@ -233,6 +248,7 @@ const AddCotizacionModal: React.FC<AddCotizacionModalProps> = ({ triggerButtonCl
                   required
                 >
                   <option value="">Seleccione un cliente</option>
+                  <option value="new">+ Nuevo cliente</option>
                   {customers.map((c) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
@@ -279,6 +295,7 @@ const AddCotizacionModal: React.FC<AddCotizacionModalProps> = ({ triggerButtonCl
                   <div className="flex gap-2">
                     <select name="product_id" value={itemForm.product_id} onChange={handleItemChange} className="w-1/3 px-2 py-1 border rounded">
                       <option value="">Producto</option>
+                      <option value="new">+ Nuevo producto</option>
                       {products.map((p) => (
                         <option key={p.id} value={p.id}>{p.name}</option>
                       ))}
