@@ -3,7 +3,6 @@
 import UserDetailsModal from "@/components/Modals/UserDetailsModal";
 import EditUserModal from "@/components/Modals/EditUserModal";
 import AddUserModal from "@/components/Modals/AddUserModal";
-
 import { useEffect, useState } from "react";
 import { MaterialReactTable } from 'material-react-table';
 import { Box, IconButton, Typography } from "@mui/material";
