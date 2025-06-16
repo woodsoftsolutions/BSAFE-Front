@@ -11,6 +11,8 @@ import { TrashIcon, PencilSquareIcon } from "@/assets/icons";
 import { useEffect, useState, useRef } from "react";
 import React from "react";
 import { API_BASE_URL } from "@/lib/constants";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function InventarioTabla() {
   const [movimientos, setMovimientos] = useState<any[]>([]);
@@ -94,6 +96,30 @@ export default function InventarioTabla() {
     setHistorialError(null);
   };
 
+  const exportToCSV = () => {
+    const headers = ["Producto", "Cantidad", "Stock mínimo", "Unidad", "Estado"];
+    const rows = movimientos.map(m => [
+      m.product?.name, m.quantity, m.minimum_stock, m.unit?.name, m.status
+    ]);
+    let csvContent = "data:text/csv;charset=utf-8," + [headers, ...rows].map(e => e.join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "inventario.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    const headers = [["Producto", "Cantidad", "Stock mínimo", "Unidad", "Estado"]];
+    const rows = movimientos.map(m => [
+      m.product?.name, m.quantity, m.minimum_stock, m.unit?.name, m.status
+    ]);
+    autoTable(doc, { head: headers, body: rows });
+    doc.save("inventario.pdf");
+  };
+
   if (loading) return <div className="p-4">Cargando inventario...</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
 
@@ -142,6 +168,10 @@ export default function InventarioTabla() {
   // Vista principal
   return (
     <div className="rounded-[10px] bg-white shadow-1 dark:bg-gray-dark dark:shadow-card">
+      <div className="flex justify-end gap-2 mb-2">
+        <button onClick={exportToPDF} className="bg-primary text-white px-3 py-1 rounded">Descargar PDF</button>
+        <button onClick={exportToCSV} className="bg-primary text-white px-3 py-1 rounded">Descargar CSV</button>
+      </div>
       <Table>
         <TableHeader>
           <TableRow className="border-t text-base [&>th]:h-auto [&>th]:py-3 sm:[&>th]:py-4.5">

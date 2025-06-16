@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/table";
 import { TrashIcon, PencilSquareIcon } from "@/assets/icons";
 import { API_BASE_URL } from "@/lib/constants";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 interface EditCotizacionModalProps {
   cotizacion: any;
@@ -479,6 +481,30 @@ const CotizacionTabla = forwardRef((props, ref) => {
     }
   };
 
+  const exportToCSV = () => {
+    const headers = ["N° Orden", "Cliente", "Proveedor", "Fecha", "Estado", "Total"];
+    const rows = cotizaciones.map(c => [
+      c.order_number, c.customer?.name, c.supplier?.name, c.order_date, c.status, c.total_amount
+    ]);
+    let csvContent = "data:text/csv;charset=utf-8," + [headers, ...rows].map(e => e.join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "cotizaciones.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    const headers = [["N° Orden", "Cliente", "Proveedor", "Fecha", "Estado", "Total"]];
+    const rows = cotizaciones.map(c => [
+      c.order_number, c.customer?.name, c.supplier?.name, c.order_date, c.status, c.total_amount
+    ]);
+    autoTable(doc, { head: headers, body: rows });
+    doc.save("cotizaciones.pdf");
+  };
+
   // Render tabla según la pestaña
   const renderTabla = (data: any[], estado: string, color: string) => (
     <Table>
@@ -574,6 +600,10 @@ const CotizacionTabla = forwardRef((props, ref) => {
         >
           Rechazadas
         </button>
+      </div>
+      <div className="flex justify-end gap-2 mb-2">
+        <button onClick={exportToPDF} className="bg-primary text-white px-3 py-1 rounded">Descargar PDF</button>
+        <button onClick={exportToCSV} className="bg-primary text-white px-3 py-1 rounded">Descargar CSV</button>
       </div>
       {alerta && (
         <div className="mb-4 px-4 py-2 rounded bg-green-100 text-green-800 font-semibold text-center">

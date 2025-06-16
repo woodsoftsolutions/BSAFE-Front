@@ -4,6 +4,8 @@ import { TrashIcon, PencilSquareIcon } from "@/assets/icons";
 import { EyeIcon } from "@/assets/icons";
 import AddProveedoresModal from "@/components/Modals/AddProveedoresModal";
 import { API_BASE_URL } from "@/lib/constants";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function ProveedoresTabla() {
   const [proveedores, setProveedores] = useState<any[]>([]);
@@ -63,6 +65,30 @@ export default function ProveedoresTabla() {
     }
   };
 
+  const exportToCSV = () => {
+    const headers = ["Proveedor", "Contacto", "Teléfono", "Email", "Dirección", "RIF", "Notas", "Activo"];
+    const rows = proveedores.map(p => [
+      p.name, p.contact_person, p.phone, p.email, p.address, p.tax_id, p.notes, p.active ? "Sí" : "No"
+    ]);
+    let csvContent = "data:text/csv;charset=utf-8," + [headers, ...rows].map(e => e.join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "proveedores.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    const headers = [["Proveedor", "Contacto", "Teléfono", "Email", "Dirección", "RIF", "Notas", "Activo"]];
+    const rows = proveedores.map(p => [
+      p.name, p.contact_person, p.phone, p.email, p.address, p.tax_id, p.notes, p.active ? "Sí" : "No"
+    ]);
+    autoTable(doc, { head: headers, body: rows });
+    doc.save("proveedores.pdf");
+  };
+
   if (loading) return <div className="p-4">Cargando proveedores...</div>;
 
   return (
@@ -70,6 +96,10 @@ export default function ProveedoresTabla() {
       {/* <div className="flex justify-end p-4">
         <AddProveedoresModal onSuccess={fetchProveedores} />
       </div> */}
+      <div className="flex justify-end gap-2 mb-2">
+        <button onClick={exportToPDF} className="bg-primary text-white px-3 py-1 rounded">Descargar PDF</button>
+        <button onClick={exportToCSV} className="bg-primary text-white px-3 py-1 rounded">Descargar CSV</button>
+      </div>
       <Table>
         <TableHeader>
           <TableRow className="border-t text-base [&>th]:h-auto [&>th]:py-3 sm:[&>th]:py-4.5">

@@ -10,6 +10,8 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { API_BASE_URL } from "@/lib/constants";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export function UsuariosTabla() {
   const [data, setData] = useState<any[]>([]);
@@ -73,6 +75,30 @@ export function UsuariosTabla() {
     setShowAddModal(false);
   };
 
+  const exportToCSV = () => {
+    const headers = ["Usuario", "Correo", "Cargo", "Teléfono", "Activo"];
+    const rows = data.map(u => [
+      u.user?.name || "", u.email || "", u.position || "", u.phone || "", u.active ? "Sí" : "No"
+    ]);
+    let csvContent = "data:text/csv;charset=utf-8," + [headers, ...rows].map(e => e.join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "usuarios.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    const headers = [["Usuario", "Correo", "Cargo", "Teléfono", "Activo"]];
+    const rows = data.map(u => [
+      u.user?.name || "", u.email || "", u.position || "", u.phone || "", u.active ? "Sí" : "No"
+    ]);
+    autoTable(doc, { head: headers, body: rows });
+    doc.save("usuarios.pdf");
+  };
+
   const columns = [
     {
       accessorKey: "user.name",
@@ -100,6 +126,10 @@ export function UsuariosTabla() {
 
   return (
     <Box sx={{ mt: 2 }}>
+      <div className="flex justify-end gap-2 mb-2">
+        <button onClick={exportToPDF} className="bg-primary text-white px-3 py-1 rounded">Descargar PDF</button>
+        <button onClick={exportToCSV} className="bg-primary text-white px-3 py-1 rounded">Descargar CSV</button>
+      </div>
       <MaterialReactTable
         columns={columns}
         data={data}

@@ -19,6 +19,8 @@
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
     "flatpickr": "^4.6.13",
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
     "jsvectormap": "^1.6.0",
     "material-react-table": "^3.2.1",
     "next": "^15.3.3",

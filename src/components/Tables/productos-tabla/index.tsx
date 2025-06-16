@@ -5,6 +5,8 @@ import { TrashIcon, PencilSquareIcon } from "@/assets/icons";
 import { EyeIcon } from "@/assets/icons";
 import AddProductModal from "@/components/Modals/AddProductModal";
 import { API_BASE_URL } from "@/lib/constants";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function ProductosTabla() {
   const [productos, setProductos] = useState<any[]>([]);
@@ -69,6 +71,30 @@ export default function ProductosTabla() {
     }
   };
 
+  const exportToCSV = () => {
+    const headers = ["Código", "Nombre", "Descripción", "Categoría", "Unidad", "Activo"];
+    const rows = productos.map(p => [
+      p.code, p.name, p.description, p.category?.name, p.unit?.name, p.active ? "Sí" : "No"
+    ]);
+    let csvContent = "data:text/csv;charset=utf-8," + [headers, ...rows].map(e => e.join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "productos.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    const headers = [["Código", "Nombre", "Descripción", "Categoría", "Unidad", "Activo"]];
+    const rows = productos.map(p => [
+      p.code, p.name, p.description, p.category?.name, p.unit?.name, p.active ? "Sí" : "No"
+    ]);
+    autoTable(doc, { head: headers, body: rows });
+    doc.save("productos.pdf");
+  };
+
   useEffect(() => {
     const header = document.querySelector("header");
     if (showDetails || showEdit || showAddModal) {
@@ -87,6 +113,10 @@ export default function ProductosTabla() {
     <div className="rounded-[10px] bg-white shadow-1 dark:bg-gray-dark dark:shadow-card">
       <div className="hidden">
         <AddProductModal onSuccess={fetchProductos} triggerButtonClassName="max-w-45 px-5 py-2 bg-[#99DFD8] hover:bg-[#24726b] hover:text-white text-gray-700 dark:text-white dark:hover:text-white dark:bg-[#24726b] font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-dark" />
+      </div>
+      <div className="flex justify-end gap-2 mb-2">
+        <button onClick={exportToPDF} className="bg-primary text-white px-3 py-1 rounded">Descargar PDF</button>
+        <button onClick={exportToCSV} className="bg-primary text-white px-3 py-1 rounded">Descargar CSV</button>
       </div>
       <Table>
         <TableHeader>
