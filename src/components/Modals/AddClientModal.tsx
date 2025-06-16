@@ -100,7 +100,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ triggerButtonClassName,
       {/* Modal */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md" style={{maxHeight: "-webkit-fill-available", overflowY: "auto", }}>
             <h2 className="text-xl font-bold mb-4">Añadir Cliente</h2>
             <form onSubmit={handleSubmit}>
               <div className="mb-4">

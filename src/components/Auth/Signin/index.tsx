@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import GoogleSigninButton from "../GoogleSigninButton";
+//import GoogleSigninButton from "../GoogleSigninButton";
 import SigninWithPassword from "../SigninWithPassword";
 
 export default function Signin() {
@@ -10,7 +10,7 @@ export default function Signin() {
       <Image src="/images/logo/logo.svg" alt="BSAFE" width={200} height={200}  />
       </div>
 
-      <GoogleSigninButton text="Sign in" />
+      {/* <GoogleSigninButton text="Sign in" />
 
       <div className="my-6 flex items-center justify-center">
       <span className="block h-px w-full bg-stroke dark:bg-dark-3"></span>
@@ -18,7 +18,7 @@ export default function Signin() {
         O ingresa con tu cuenta
       </div>
       <span className="block h-px w-full bg-stroke dark:bg-dark-3"></span>
-      </div>
+      </div> */}
 
       <div>
       <SigninWithPassword />

@@ -58,6 +58,7 @@ export default function SigninWithPassword() {
     }
   };
 
+
   return (
     <form onSubmit={handleSubmit}>
       {error ? <div className="mb-4 text-red-600">{error}</div> : null}

@@ -55,15 +55,15 @@ export const NAV_DATA = [
       },
     ],
   },
-  {
-    label: "OTROS",
-    items: [
-      {
-        title: "Authenticación",
-        icon: Icons.Authentication,
-        url: "/auth/sign-in",
-        items: [],
-      },
-    ],
-  },
+  // {
+  //   label: "OTROS",
+  //   items: [
+  //     {
+  //       title: "Authenticación",
+  //       icon: Icons.Authentication,
+  //       url: "/auth/sign-in",
+  //       items: [],
+  //     },
+  //   ],
+  // },
 ];

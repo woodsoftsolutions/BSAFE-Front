@@ -1,16 +1,14 @@
 "use client";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { useEffect, useState } from "react";
-import { TrashIcon, PencilSquareIcon, EyeIcon } from "@/assets/icons";
+
 import UserDetailsModal from "@/components/Modals/UserDetailsModal";
 import EditUserModal from "@/components/Modals/EditUserModal";
+import AddUserModal from "@/components/Modals/AddUserModal";
+import { useEffect, useState } from "react";
+import { MaterialReactTable } from 'material-react-table';
+import { Box, IconButton, Typography } from "@mui/material";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { API_BASE_URL } from "@/lib/constants";
 
 export function UsuariosTabla() {
@@ -19,6 +17,7 @@ export function UsuariosTabla() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   // Refactor: fetchData como función reutilizable
   const fetchData = async () => {
@@ -43,84 +42,106 @@ export function UsuariosTabla() {
     fetchData();
   };
 
+  const handleEdit = (user: any) => {
+    setSelectedUser(user);
+    setShowEdit(true);
+  };
+
+  const handleDetails = (user: any) => {
+    setSelectedUser(user);
+    setShowDetails(true);
+  };
+
+  const handleAddUser = () => {
+    fetchData();
+    setShowAddModal(false);
+  };
+
+  const columns = [
+    {
+      accessorKey: "user.name",
+      header: "Usuario",
+      Cell: ({ cell, row }: any) => (
+        <Typography
+          onClick={() => handleDetails(row.original)}
+          sx={{ cursor: "pointer", fontWeight: 500 }}
+        >
+          {cell.getValue()}
+        </Typography>
+      ),
+    },
+    { accessorKey: "email", header: "Correo" },
+    { accessorKey: "position", header: "Cargo" },
+    { accessorKey: "phone", header: "Teléfono" },
+    {
+      accessorKey: "active",
+      header: "Activo",
+      Cell: ({ cell }: any) => (cell.getValue() ? "Sí" : "No"),
+    },
+  ];
+
+
+
   return (
-    <div className="rounded-[10px] bg-white shadow-1 dark:bg-gray-dark dark:shadow-card">
-      <Table>
-        <TableHeader>
-          <TableRow className="border-t text-base [&>th]:h-auto [&>th]:py-3 sm:[&>th]:py-4.5">
-            <TableHead className="min-w-[120px] pl-5 sm:pl-6 xl:pl-7.5">
-              Usuario
-            </TableHead>
-            <TableHead>Correo</TableHead>
-            <TableHead>Cargo</TableHead>
-            <TableHead>Teléfono</TableHead>
-            <TableHead className="text-right xl:pr-7.5">Opciones</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {loading ? (
-            <TableRow>
-              <TableCell colSpan={5} className="text-center">
-                Cargando...
-              </TableCell>
-            </TableRow>
-          ) : data.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={5} className="text-center">
-                Sin datos
-              </TableCell>
-            </TableRow>
-          ) : (
-            data.map((usuario: any) => (
-              <TableRow
-                className="text-base font-medium text-dark dark:text-white"
-                key={usuario.id}
-              >
-                <TableCell className="flex min-w-fit items-center gap-3 pl-5 sm:pl-6 xl:pl-7.5">
-                  <div>{usuario.user?.name || "-"}</div>
-                </TableCell>
-                <TableCell>{usuario.user?.email || "-"}</TableCell>
-                <TableCell>{usuario.position || "-"}</TableCell>
-                <TableCell>{usuario.phone || "-"}</TableCell>
-                <TableCell className="xl:pr-7.5">
-                  <div className="flex items-center justify-end gap-x-3.5">
-                    <button
-                      className="hover:text-primary"
-                      onClick={() => {
-                        setSelectedUser(usuario);
-                        setShowDetails(true);
-                      }}
-                    >
-                      <span className="sr-only">Detalles</span>
-                      <EyeIcon />
-                    </button>
-                    <button
-                      className="hover:text-primary"
-                      onClick={() => {
-                        setSelectedUser(usuario);
-                        setShowEdit(true);
-                      }}
-                    >
-                      <span className="sr-only">Editar</span>
-                      <PencilSquareIcon />
-                    </button>
-                    <button className="hover:text-primary">
-                      <span className="sr-only">Eliminar</span>
-                      <TrashIcon />
-                    </button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-      {showDetails && (
-        <UserDetailsModal user={selectedUser} onClose={() => setShowDetails(false)} />
+    <Box sx={{ mt: 2 }}>
+      <MaterialReactTable
+        columns={columns}
+        data={data}
+        state={{ isLoading: loading }}
+        enableFullScreenToggle={false}
+        enableRowActions
+        positionActionsColumn="last"
+        renderRowActions={({ row }) => (
+          <Box sx={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+            <IconButton onClick={() => handleDetails(row.original)} size="small">
+              <VisibilityIcon fontSize="small" />
+            </IconButton>
+            <IconButton onClick={() => handleEdit(row.original)} size="small">
+              <EditIcon fontSize="small" />
+            </IconButton>
+            <IconButton color="error" size="small">
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        )}
+        muiTablePaperProps={{
+          elevation: 2,
+          sx: {
+            borderRadius: "10px",
+            overflow: "hidden",
+          },
+        }}
+        muiTableContainerProps={{
+          sx: {
+            maxHeight: "600px",
+          },
+        }}
+        muiTableHeadCellProps={{
+          sx: { fontWeight: "bold", fontFamily: "Satoshi" },
+        }}
+        muiTableBodyCellProps={{
+          sx: { fontSize: "0.95rem", fontFamily: "Satoshi" },
+        }}
+        muiPaginationProps={{
+          rowsPerPageOptions: [5, 10, 20],
+        }}
+      />
+
+      {selectedUser && (
+        <UserDetailsModal
+          user={selectedUser}
+          // isOpen={showDetails}
+          onClose={() => setShowDetails(false)}
+        />
       )}
-      {showEdit && (
-        <EditUserModal user={selectedUser} onClose={() => setShowEdit(false)} onSuccess={handleEditSuccess} />
+      {selectedUser && (
+        <EditUserModal
+          user={selectedUser}
+          // isOpen={showEdit}
+          onClose={() => setShowEdit(false)}
+          onSuccess={handleEditSuccess}
+        />
       )}
-    </div>
+    </Box>
   );
 }
