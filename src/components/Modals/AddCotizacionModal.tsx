@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { API_BASE_URL } from "@/lib/constants";
 import { useRouter } from "next/navigation";
+import Toast from "@/components/ui/Toast";
 
 interface AddCotizacionModalProps {
   triggerButtonClassName?: string;
@@ -32,6 +33,8 @@ const AddCotizacionModal: React.FC<AddCotizacionModalProps> = ({ triggerButtonCl
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState(1);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [inventoryBalances, setInventoryBalances] = useState<any[]>([]);
   const router = useRouter();
 
   const openModal = () => setIsOpen(true);
@@ -49,6 +52,10 @@ const AddCotizacionModal: React.FC<AddCotizacionModalProps> = ({ triggerButtonCl
       fetch(`${API_BASE_URL}/api/products`)
         .then((res) => res.json())
         .then((data) => setProducts(Array.isArray(data) ? data : (data.data || [])));
+      // Obtener balances de inventario siempre actualizado al abrir
+      fetch(`${API_BASE_URL}/api/inventory-balances?${Date.now()}`)
+        .then((res) => res.json())
+        .then((data) => setInventoryBalances(Array.isArray(data.data) ? data.data : []));
       // Obtener usuario logueado y buscar su employee_id real
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       console.log("user from localStorage:", user);
@@ -133,6 +140,25 @@ const AddCotizacionModal: React.FC<AddCotizacionModalProps> = ({ triggerButtonCl
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
     if (!itemForm.product_id || !itemForm.quantity || !itemForm.unit_price) return;
+    // Validar stock disponible usando inventoryBalances
+    const balance = inventoryBalances.find((b) => String(b.product_id) === String(itemForm.product_id));
+    const available = balance ? Number(balance.quantity) : undefined;
+    if (available !== undefined && available !== null && !isNaN(available)) {
+      if (Number(itemForm.quantity) > available) {
+        setToast({ message: `La cantidad solicitada (${itemForm.quantity}) excede el stock disponible (${available})`, type: 'error' });
+        return;
+      }
+    }
+    // Validar que la cantidad sea mayor a 0
+    if (Number(itemForm.quantity) <= 0) {
+      setToast({ message: 'La cantidad debe ser mayor a 0', type: 'error' });
+      return;
+    }
+    // Validar que el producto no esté ya en la lista
+    if (items.some(item => String(item.product_id) === String(itemForm.product_id))) {
+      setToast({ message: 'Este producto ya fue añadido a la cotización', type: 'error' });
+      return;
+    }
     setItems((prev) => [...prev, { ...itemForm, product_id: Number(itemForm.product_id), quantity: Number(itemForm.quantity), unit_price: Number(itemForm.unit_price), total_price: Number(itemForm.total_price) }]);
     setItemForm({ product_id: '', quantity: '', unit_price: '', total_price: '', specifications: '' });
   };
@@ -173,7 +199,7 @@ const AddCotizacionModal: React.FC<AddCotizacionModalProps> = ({ triggerButtonCl
         body: JSON.stringify({
           ...form,
           order_number,
-          supplier_id: 1,
+          supplier_id: null,
           customer_id: Number(form.customer_id),
           employee_id: Number(form.employee_id),
           total_amount: Number(form.total_amount),
@@ -221,6 +247,9 @@ const AddCotizacionModal: React.FC<AddCotizacionModalProps> = ({ triggerButtonCl
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-1/2">
+            {toast && (
+              <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
+            )}
             <h2 className="text-xl font-bold mb-4">Añadir Cotización</h2>
             <form onSubmit={handleSubmit}>
               {error && <div className="mb-2 text-red-500">{error}</div>}
@@ -246,6 +275,7 @@ const AddCotizacionModal: React.FC<AddCotizacionModalProps> = ({ triggerButtonCl
                   onChange={handleChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#24726b] focus:border-[#24726b] dark:bg-gray-700 dark:text-white"
                   required
+                  disabled={items.length > 0}
                 >
                   <option value="">Seleccione un cliente</option>
                   <option value="new">+ Nuevo cliente</option>
@@ -253,6 +283,9 @@ const AddCotizacionModal: React.FC<AddCotizacionModalProps> = ({ triggerButtonCl
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
+                {items.length > 0 && (
+                  <div className="text-xs text-blue-500 mt-1">No se puede cambiar el cliente después de añadir productos.</div>
+                )}
               </div>
               {/* <div className="mb-4 flex gap-2">
                 <div className="w-1/2">

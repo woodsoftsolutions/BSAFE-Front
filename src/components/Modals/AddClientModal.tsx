@@ -2,9 +2,12 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { API_BASE_URL } from "@/lib/constants";
+import Toast from "@/components/ui/Toast";
 
 interface AddClientModalProps {
   triggerButtonClassName?: string;
+   isOpen: boolean;
+  onClose: () => void;
   onSuccess?: () => void;
 }
 
@@ -19,9 +22,11 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ triggerButtonClassName,
     tax_id: "",
     customer_type: "wholesaler",
     notes: "",
-    active: true,
+    active: true
+
   });
   const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const headerHiddenRef = useRef(false);
 
   const openModal = () => setIsOpen(true);
@@ -46,6 +51,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ triggerButtonClassName,
         body: JSON.stringify(form),
       });
       if (res.ok) {
+        setToast({ message: "Cliente registrado exitosamente", type: 'success' });
         setForm({
           name: "",
           contact_person: "",
@@ -57,8 +63,12 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ triggerButtonClassName,
           notes: "",
           active: true,
         });
-        closeModal();
-        if (onSuccess) onSuccess();
+        setTimeout(() => {
+          closeModal();
+          if (onSuccess) onSuccess();
+        }, 1200);
+      } else {
+        setToast({ message: "Error al registrar cliente", type: 'error' });
       }
     } finally {
       setLoading(false);
@@ -92,15 +102,17 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ triggerButtonClassName,
       {/* Trigger Button */}
       <button
         onClick={openModal}
-        className={triggerButtonClassName || "px-4 py-2 bg-[#99DFD8] hover:bg-[#24726b] text-white rounded-lg"}
+          className="max-w-45 px-5 py-2 bg-[#99DFD8] hover:bg-[#24726b] hover:text-white text-gray-700 dark:text-white dark:hover:text-white dark:bg-[#24726b] font-medium rounded-lg self-end"
       >
         Añadir Cliente +
       </button>
-
       {/* Modal */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md" style={{maxHeight: "-webkit-fill-available", overflowY: "auto", }}>
+            {toast && (
+              <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
+            )}
             <h2 className="text-xl font-bold mb-4">Añadir Cliente</h2>
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
@@ -192,8 +204,9 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ triggerButtonClassName,
                   onChange={handleChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#24726b] focus:border-[#24726b] dark:bg-gray-700 dark:text-white"
                 >
-                  <option value="wholesaler">Mayorista</option>
-                  <option value="retail">Minorista</option>
+                  <option value="regular">Regular</option>
+                  <option value="wholesaler">Minorista</option>
+                  <option value="government">Gubernamental</option>
                 </select>
               </div>
               <div className="mb-4">

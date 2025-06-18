@@ -1,12 +1,14 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { TrashIcon, PencilSquareIcon } from "@/assets/icons";
-import { EyeIcon } from "@/assets/icons";
-import AddProductModal from "@/components/Modals/AddProductModal";
+import { MaterialReactTable } from 'material-react-table';
+import { Box, IconButton, Typography } from "@mui/material";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { API_BASE_URL } from "@/lib/constants";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import AddProductModal from "@/components/Modals/AddProductModal";
 
 export default function ProductosTabla() {
   const [productos, setProductos] = useState<any[]>([]);
@@ -107,10 +109,23 @@ export default function ProductosTabla() {
     };
   }, [showDetails, showEdit, showAddModal]);
 
+  const columns = [
+    { accessorKey: "code", header: "Código" },
+    { accessorKey: "name", header: "Nombre" },
+    { accessorKey: "description", header: "Descripción" },
+    { accessorKey: "category.name", header: "Categoría", Cell: ({ row }: any) => row.original.category?.name || "-" },
+    { accessorKey: "unit.name", header: "Unidad", Cell: ({ row }: any) => row.original.unit?.name || "-" },
+    {
+      accessorKey: "active",
+      header: "Activo",
+      Cell: ({ cell }: any) => (cell.getValue() ? "Sí" : "No"),
+    },
+  ];
+
   if (loading) return <div className="p-4">Cargando productos...</div>;
 
   return (
-    <div className="rounded-[10px] bg-white shadow-1 dark:bg-gray-dark dark:shadow-card">
+    <Box sx={{ mt: 2 }} className="rounded-[10px] bg-white shadow-1 dark:bg-gray-dark dark:shadow-card">
       <div className="hidden">
         <AddProductModal onSuccess={fetchProductos} triggerButtonClassName="max-w-45 px-5 py-2 bg-[#99DFD8] hover:bg-[#24726b] hover:text-white text-gray-700 dark:text-white dark:hover:text-white dark:bg-[#24726b] font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-dark" />
       </div>
@@ -118,63 +133,53 @@ export default function ProductosTabla() {
         <button onClick={exportToPDF} className="bg-primary text-white px-3 py-1 rounded">Descargar PDF</button>
         <button onClick={exportToCSV} className="bg-primary text-white px-3 py-1 rounded">Descargar CSV</button>
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow className="border-t text-base [&>th]:h-auto [&>th]:py-3 sm:[&>th]:py-4.5">
-            <TableHead>Código</TableHead>
-            <TableHead>Nombre</TableHead>
-            <TableHead>Descripción</TableHead>
-            <TableHead>Categoría</TableHead>
-            <TableHead>Unidad</TableHead>
-            <TableHead>Activo</TableHead>
-            <TableHead className="text-right xl:pr-7.5">Opciones</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {productos.map((producto) => (
-            <TableRow key={producto.id} className="text-base font-medium text-dark dark:text-white">
-              <TableCell>{producto.code}</TableCell>
-              <TableCell>{producto.name}</TableCell>
-              <TableCell>{producto.description}</TableCell>
-              <TableCell>{producto.category?.name}</TableCell>
-              <TableCell>{producto.unit?.name}</TableCell>
-              <TableCell>{producto.active ? "Sí" : "No"}</TableCell>
-              <TableCell className="xl:pr-7.5">
-                <div className="flex items-center justify-end gap-x-3.5">
-                  <button className="hover:text-primary" onClick={() => handleDetails(producto)}>
-                    <span className="sr-only">Ver</span>
-                    <EyeIcon />
-                  </button>
-                  <button className="hover:text-primary" onClick={() => handleEdit(producto)}>
-                    <span className="sr-only">Editar</span>
-                    <PencilSquareIcon />
-                  </button>
-                  <button className="hover:text-red-500" onClick={() => handleDelete(producto.id)}>
-                    <span className="sr-only">Eliminar</span>
-                    <TrashIcon />
-                  </button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <div className="flex justify-end mt-4">
-        <button disabled={page === 0} onClick={() => setPage(page - 1)}>Anterior</button>
-        <span className="mx-2">Página {page + 1}</span>
-        <button onClick={() => setPage(page + 1)}>Siguiente</button>
-      </div>
-      {/*
-      {selectedProduct && (
-        <ProductDetailsModal product={selectedProduct} isOpen={showDetails} onClose={() => setShowDetails(false)} />
-      )}
-      {selectedProduct && (
-        <EditProductModal product={selectedProduct} isOpen={showEdit} onClose={() => setShowEdit(false)} onSave={handleSaveEdit} />
-      )}
-      {showAddModal && (
-        <AddProductModal onSuccess={handleAddProduct} triggerButtonClassName="hidden" />
-      )}
-      */}
-    </div>
+      <MaterialReactTable
+        columns={columns}
+        data={productos}
+        state={{ isLoading: loading, pagination: { pageIndex: page, pageSize: rowsPerPage } }}
+        enableFullScreenToggle={false}
+        enableRowActions
+        positionActionsColumn="last"
+        onPaginationChange={(updater) => {
+          const next = typeof updater === 'function' ? updater({ pageIndex: page, pageSize: rowsPerPage }) : updater;
+          setPage(next.pageIndex);
+          setRowsPerPage(next.pageSize);
+        }}
+        renderRowActions={({ row }) => (
+          <Box sx={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+            <IconButton onClick={() => handleDetails(row.original)} size="small">
+              <VisibilityIcon fontSize="small" />
+            </IconButton>
+            <IconButton onClick={() => handleEdit(row.original)} size="small">
+              <EditIcon fontSize="small" />
+            </IconButton>
+            <IconButton color="error" onClick={() => handleDelete(row.original.id)} size="small">
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        )}
+        muiTablePaperProps={{
+          elevation: 2,
+          sx: {
+            borderRadius: "10px",
+            overflow: "hidden",
+          },
+        }}
+        muiTableContainerProps={{
+          sx: {
+            maxHeight: "600px",
+          },
+        }}
+        muiTableHeadCellProps={{
+          sx: { fontWeight: "bold", fontFamily: "Satoshi" },
+        }}
+        muiTableBodyCellProps={{
+          sx: { fontSize: "0.95rem", fontFamily: "Satoshi" },
+        }}
+        muiPaginationProps={{
+          rowsPerPageOptions: [5, 10, 20],
+        }}
+      />
+    </Box>
   );
 }

@@ -60,7 +60,9 @@ export default function ClientesTabla() {
     fetchClientes(page, rowsPerPage);
   };
 
+  // Recibe onSuccess del modal para refrescar la tabla inmediatamente
   const handleAddClient = () => {
+    cacheRef.current = {};
     fetchClientes(page, rowsPerPage);
     setShowAddModal(false);
   };
@@ -146,11 +148,23 @@ export default function ClientesTabla() {
         enableRowActions
         positionActionsColumn="last"
         onPaginationChange={(updater) => {
-          // updater puede ser un objeto o una función
           const next = typeof updater === 'function' ? updater({ pageIndex: page, pageSize: rowsPerPage }) : updater;
           setPage(next.pageIndex);
           setRowsPerPage(next.pageSize);
         }}
+        renderRowActions={({ row }) => (
+          <Box sx={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+            <IconButton onClick={() => handleDetails(row.original)} size="small">
+              <VisibilityIcon fontSize="small" />
+            </IconButton>
+            <IconButton onClick={() => handleEdit(row.original)} size="small">
+              <EditIcon fontSize="small" />
+            </IconButton>
+            <IconButton color="error" size="small">
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        )}
         muiTablePaperProps={{
           elevation: 2,
           sx: {
@@ -167,13 +181,12 @@ export default function ClientesTabla() {
           sx: { fontWeight: "bold", fontFamily: "Satoshi" },
         }}
         muiTableBodyCellProps={{
-          sx: { fontSize: "0.95rem",fontFamily: "Satoshi"},
+          sx: { fontSize: "0.95rem", fontFamily: "Satoshi" },
         }}
         muiPaginationProps={{
           rowsPerPageOptions: [5, 10, 20],
         }}
       />
-
       {selectedClient && (
         <ClientDetailsModal
           client={selectedClient}
@@ -191,8 +204,10 @@ export default function ClientesTabla() {
       )}
       {showAddModal && (
         <AddClientModal
+          isOpen={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          triggerButtonClassName="max-w-45 px-5 py-2 bg-[#99DFD8] hover:bg-[#24726b] hover:text-white text-gray-700 dark:text-white dark:hover:text-white dark:bg-[#24726b] font-medium rounded-lg self-end"
           onSuccess={handleAddClient}
-          triggerButtonClassName="hidden"
         />
       )}
     </Box>

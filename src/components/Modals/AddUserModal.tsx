@@ -2,9 +2,13 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { API_BASE_URL } from "@/lib/constants";
+import Toast from "@/components/ui/Toast";
 
 interface AddUserModalProps {
   triggerButtonClassName?: string;
+  isOpen?: boolean;
+  onClose?: () => void;
+  onSuccess?: (user?: any) => void;
 }
 
 const initialState = {
@@ -20,12 +24,13 @@ const initialState = {
   password: "",
 };
 
-const AddUserModal: React.FC<AddUserModalProps> = ({ triggerButtonClassName }) => {
+const AddUserModal: React.FC<AddUserModalProps> = ({ triggerButtonClassName, isOpen: isOpenProp, onClose, onSuccess }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState({ ...initialState });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const headerHiddenRef = useRef(false);
 
   const openModal = () => {
@@ -34,7 +39,10 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ triggerButtonClassName }) =
     setSuccess(null);
     setIsOpen(true);
   };
-  const closeModal = () => setIsOpen(false);
+  const closeModal = () => {
+    setIsOpen(false);
+    if (onClose) onClose();
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -67,6 +75,10 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ triggerButtonClassName }) =
         return `El campo ${field.replace("_", " ")} es requerido.`;
       }
     }
+    // Restricción de contraseña mínima
+    if (form.password && form.password.length < 8) {
+      return "La contraseña debe tener al menos 8 caracteres.";
+    }
     return null;
   };
 
@@ -76,7 +88,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ triggerButtonClassName }) =
     setSuccess(null);
     const validationError = validate();
     if (validationError) {
-      setError(validationError);
+      setToast({ message: validationError, type: 'error' });
       return;
     }
     setLoading(true);
@@ -92,16 +104,17 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ triggerButtonClassName }) =
       });
       const result = await res.json();
       if (res.ok) {
-        setSuccess("Usuario registrado exitosamente");
+        setToast({ message: "Usuario registrado exitosamente", type: 'success' });
         setForm({ ...initialState });
+        if (onSuccess) onSuccess(result.data || payload);
         setTimeout(() => {
           setIsOpen(false);
         }, 1200);
       } else {
-        setError(result.message || "Error al registrar usuario");
+        setToast({ message: result.message || "Error al registrar usuario", type: 'error' });
       }
     } catch (err) {
-      setError("Error de conexión con el servidor");
+      setToast({ message: "Error de conexión con el servidor", type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -129,25 +142,30 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ triggerButtonClassName }) =
     };
   }, [isOpen]);
 
+  // Sincroniza estado abierto/cerrado si se usa como controlado
+  useEffect(() => {
+    if (typeof isOpenProp === 'boolean') setIsOpen(isOpenProp);
+  }, [isOpenProp]);
+
   return (
     <>
       {/* Trigger Button */}
       <button
         onClick={openModal}
-        className={triggerButtonClassName || "px-4 py-2 bg-[#99DFD8] hover:bg-[#24726b] text-white rounded-lg"}
+        className="max-w-50 px-5 py-2 bg-[#99DFD8] hover:bg-[#24726b] hover:text-white text-gray-700 dark:text-white dark:hover:text-white dark:bg-[#24726b] font-medium rounded-lg self-end"
       >
         Añadir Usuario +
       </button>
-
       {/* Modal */}
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md" 
                style={{maxHeight: "-webkit-fill-available", overflowY: "auto",}}>
+            {toast && (
+              <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
+            )}
             <h2 className="text-xl font-bold mb-4">Añadir Usuario</h2>
             <form onSubmit={handleSubmit}>
-              {error && <div className="mb-2 text-red-600">{error}</div>}
-              {success && <div className="mb-2 text-green-600">{success}</div>}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre</label>
                 <input
@@ -259,6 +277,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ triggerButtonClassName }) =
                   name="password"
                   value={form.password}
                   onChange={handleChange}
+                  minLength={8}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#24726b] focus:border-[#24726b] dark:bg-gray-700 dark:text-white"
                   placeholder="Ingrese la contraseña"
                   required

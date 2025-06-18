@@ -30,6 +30,7 @@
     "react-apexcharts": "^1.4.1",
     "react-dom": "19.0.0",
     "react-icons": "^5.5.0",
+    "react-qr-barcode-scanner": "^2.1.6",
     "react-quill": "^2.0.0",
     "react-select": "^5.10.0",
     "react-table": "^7.8.0",

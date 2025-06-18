@@ -12,9 +12,11 @@ export default function SettingsPage() {
     <div className="mx-auto w-full max-w-[1080px]">
       <Breadcrumb pageName="Configuración" />
 
-        <div className="flex justify-end mb-4">
+      <div className="flex justify-end mb-4">
         <Link href="/settings">
-          <button className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/80 transition">Ir a Parámetros</button>
+          <button className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/80 transition">
+            Ir a Parámetros
+          </button>
         </Link>
       </div>
 
@@ -25,5 +27,5 @@ export default function SettingsPage() {
       </div>
     </div>
   );
-};
+}
 

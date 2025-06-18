@@ -2,7 +2,7 @@
 
 import UserDetailsModal from "@/components/Modals/UserDetailsModal";
 import EditUserModal from "@/components/Modals/EditUserModal";
-import AddUserModal from "@/components/Modals/AddUserModal";
+import Toast from "@/components/ui/Toast";
 import { useEffect, useState, useRef } from "react";
 import { MaterialReactTable } from 'material-react-table';
 import { Box, IconButton, Typography } from "@mui/material";
@@ -19,9 +19,10 @@ export function UsuariosTabla() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const cacheRef = useRef<{ [key: string]: any[] }>({});
 
@@ -55,6 +56,12 @@ export function UsuariosTabla() {
     fetchData(page, rowsPerPage);
   }, [page, rowsPerPage]);
 
+  useEffect(() => {
+    // Obtener el usuario actual del localStorage
+    const user = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}') : null;
+    setCurrentUserId(user?.id ?? null);
+  }, []);
+
   // Handler para refrescar datos tras edición
   const handleEditSuccess = () => {
     fetchData(page, rowsPerPage);
@@ -68,11 +75,6 @@ export function UsuariosTabla() {
   const handleDetails = (user: any) => {
     setSelectedUser(user);
     setShowDetails(true);
-  };
-
-  const handleAddUser = () => {
-    fetchData(page, rowsPerPage);
-    setShowAddModal(false);
   };
 
   const exportToCSV = () => {
@@ -91,27 +93,16 @@ export function UsuariosTabla() {
   };
   const exportToPDF = () => {
     const doc = new jsPDF();
-    const headers = [["Usuario", "Correo", "Cargo", "Teléfono", "Activo"]];
+    const headers = [[ "Correo", "Cargo", "Teléfono", "Activo"]];
     const rows = data.map(u => [
-      u.user?.name || "", u.email || "", u.position || "", u.phone || "", u.active ? "Sí" : "No"
+      u.email || "", u.position || "", u.phone || "", u.active ? "Sí" : "No"
     ]);
     autoTable(doc, { head: headers, body: rows });
     doc.save("usuarios.pdf");
   };
 
   const columns = [
-    {
-      accessorKey: "user.name",
-      header: "Usuario",
-      Cell: ({ cell, row }: any) => (
-        <Typography
-          onClick={() => handleDetails(row.original)}
-          sx={{ cursor: "pointer", fontWeight: 500 }}
-        >
-          {cell.getValue()}
-        </Typography>
-      ),
-    },
+
     { accessorKey: "email", header: "Correo" },
     { accessorKey: "position", header: "Cargo" },
     { accessorKey: "phone", header: "Teléfono" },
@@ -122,10 +113,37 @@ export function UsuariosTabla() {
     },
   ];
 
-
+  // Eliminar empleado
+  const handleDelete = async (user: any) => {
+    if (!user?.id) return;
+    if (!window.confirm('¿Está seguro de eliminar este empleado?')) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/employees/${user.id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        // Eliminar el usuario del estado local inmediatamente
+        setData((prev) => prev.filter((u) => u.id !== user.id));
+        setToast({ message: 'Empleado eliminado correctamente', type: 'success' });
+        // Opcional: limpiar caché para que la próxima paginación/fetch sea correcta
+        cacheRef.current = {};
+      } else {
+        setToast({ message: 'Error al eliminar el empleado', type: 'error' });
+      }
+    } catch (e) {
+      setToast({ message: 'Error de conexión al eliminar el empleado', type: 'error' });
+    }
+  };
 
   return (
     <Box sx={{ mt: 2 }}>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
       <div className="flex justify-end gap-2 mb-2">
         <button onClick={exportToPDF} className="bg-primary text-white px-3 py-1 rounded">Descargar PDF</button>
         <button onClick={exportToCSV} className="bg-primary text-white px-3 py-1 rounded">Descargar CSV</button>
@@ -150,9 +168,13 @@ export function UsuariosTabla() {
             <IconButton onClick={() => handleEdit(row.original)} size="small">
               <EditIcon fontSize="small" />
             </IconButton>
-            <IconButton color="error" size="small">
-              <DeleteIcon fontSize="small" />
-            </IconButton>
+           
+            {/* Bloquea el borrado del usuario actual comparando con row.original.id */}
+            {row.original.id !== currentUserId && (
+              <IconButton color="error" size="small" onClick={() => handleDelete(row.original)}>
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            )}
           </Box>
         )}
         muiTablePaperProps={{
@@ -178,21 +200,20 @@ export function UsuariosTabla() {
         }}
       />
 
-      {selectedUser && (
+      {selectedUser && showDetails && (
         <UserDetailsModal
           user={selectedUser}
-          // isOpen={showDetails}
-          onClose={() => setShowDetails(false)}
+          onClose={() => { setShowDetails(false); setSelectedUser(null); }}
         />
       )}
-      {selectedUser && (
+      {selectedUser && showEdit && (
         <EditUserModal
           user={selectedUser}
-          // isOpen={showEdit}
-          onClose={() => setShowEdit(false)}
+          onClose={() => { setShowEdit(false); setSelectedUser(null); }}
           onSuccess={handleEditSuccess}
         />
       )}
+      {/* Eliminar el modal AddUserModal de aquí, ya que el correcto está en TablesPage */}
     </Box>
   );
 }

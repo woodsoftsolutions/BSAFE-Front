@@ -13,6 +13,13 @@ import { TrashIcon, PencilSquareIcon } from "@/assets/icons";
 import { API_BASE_URL } from "@/lib/constants";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { MaterialReactTable } from 'material-react-table';
+import { Box, IconButton, Typography } from "@mui/material";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import Toast from '@/components/ui/Toast';
+import { getInventoryBalanceForProduct } from '@/utils/inventory';
 
 interface EditCotizacionModalProps {
   cotizacion: any;
@@ -338,7 +345,110 @@ const ProductosModal = ({ isOpen, onClose, productos, nombreCotizacion }: { isOp
   );
 };
 
-const CotizacionTabla = forwardRef((props, ref) => {
+interface CotizacionTablaProps {
+  cotizaciones: any[];
+  loading: boolean;
+  page: number;
+  rowsPerPage: number;
+  setPage: (page: number) => void;
+  setRowsPerPage: (rows: number) => void;
+  handleDetails: (cotizacion: any) => void;
+  handleEdit: (cotizacion: any) => void;
+  handleDelete: (id: number) => void;
+  exportToPDF: () => void;
+  exportToCSV: () => void;
+}
+
+export function CotizacionTabla({
+  cotizaciones,
+  loading,
+  page,
+  rowsPerPage,
+  setPage,
+  setRowsPerPage,
+  handleDetails,
+  handleEdit,
+  handleDelete,
+  exportToPDF,
+  exportToCSV,
+}: CotizacionTablaProps) {
+  // Define columns for MaterialReactTable
+  const columns = [
+    { accessorKey: "order_number", header: "N° Cotización" },
+    { accessorKey: "customer.name", header: "Cliente", Cell: ({ row }: any) => row.original.customer?.name || "-" },
+    { accessorKey: "employee.user.name", header: "Vendedor", Cell: ({ row }: any) => row.original.employee?.user?.name || "-" },
+    { accessorKey: "total_amount", header: "Total", Cell: ({ row }: any) => `$${row.original.total_amount}` },
+    { accessorKey: "status", header: "Estado" },
+    { accessorKey: "created_at", header: "Fecha", Cell: ({ row }: any) => row.original.created_at ? new Date(row.original.created_at).toLocaleDateString() : "-" },
+  ];
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[200px]">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
+        <span className="ml-3 text-primary font-medium">Cargando cotizaciones...</span>
+      </div>
+    );
+  }
+
+  return (
+    <Box sx={{ mt: 2 }}>
+      <div className="flex justify-end gap-2 mb-2">
+        <button onClick={exportToPDF} className="bg-primary text-white px-3 py-1 rounded">Descargar PDF</button>
+        <button onClick={exportToCSV} className="bg-primary text-white px-3 py-1 rounded">Descargar CSV</button>
+      </div>
+      <MaterialReactTable
+        columns={columns}
+        data={cotizaciones}
+        state={{ isLoading: loading, pagination: { pageIndex: page, pageSize: rowsPerPage } }}
+        enableFullScreenToggle={false}
+        enableRowActions
+        positionActionsColumn="last"
+        onPaginationChange={(updater) => {
+          const next = typeof updater === 'function' ? updater({ pageIndex: page, pageSize: rowsPerPage }) : updater;
+          setPage(next.pageIndex);
+          setRowsPerPage(next.pageSize);
+        }}
+        renderRowActions={({ row }) => (
+          <Box sx={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+            <IconButton onClick={() => handleDetails(row.original)} size="small">
+              <VisibilityIcon fontSize="small" />
+            </IconButton>
+            <IconButton onClick={() => handleEdit(row.original)} size="small">
+              <EditIcon fontSize="small" />
+            </IconButton>
+            <IconButton color="error" onClick={() => handleDelete(row.original.id)} size="small">
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        )}
+        muiTablePaperProps={{
+          elevation: 2,
+          sx: {
+            borderRadius: "10px",
+            overflow: "hidden",
+          },
+        }}
+        muiTableContainerProps={{
+          sx: {
+            maxHeight: "600px",
+          },
+        }}
+        muiTableHeadCellProps={{
+          sx: { fontWeight: "bold", fontFamily: "Satoshi" },
+        }}
+        muiTableBodyCellProps={{
+          sx: { fontSize: "0.95rem", fontFamily: "Satoshi" },
+        }}
+        muiPaginationProps={{
+          rowsPerPageOptions: [5, 10, 20],
+        }}
+      />
+    </Box>
+  );
+}
+
+const CotizacionTablaWrapper = forwardRef((props, ref) => {
   const [cotizaciones, setCotizaciones] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -357,22 +467,28 @@ const CotizacionTabla = forwardRef((props, ref) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const cacheRef = useRef<{ [key: string]: any[] }>({});
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  // Estado para balances de inventario
+  const [inventoryBalances, setInventoryBalances] = useState<any[]>([]);
+  // Estado para productos
+  const [products, setProducts] = useState<any[]>([]);
 
-  const fetchCotizaciones = async (pageIndex = 0, pageSize = 10) => {
-    const cacheKey = `${pageIndex}_${pageSize}`;
-    if (cacheRef.current[cacheKey]) {
+  // Nuevo: fetch por status según la pestaña activa, con caché salvo tras operaciones
+  const fetchCotizaciones = async (pageIndex = 0, pageSize = 10, status: string, force = false) => {
+    const cacheKey = `${status}_${pageIndex}_${pageSize}`;
+    if (!force && cacheRef.current[cacheKey]) {
       setCotizaciones(cacheRef.current[cacheKey]);
       setLoading(false);
       return;
     }
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/orders/paginated?per_page=${pageSize}&page=${pageIndex + 1}`);
+      const res = await fetch(`${API_BASE_URL}/api/orders/paginated?status=${status}&per_page=${pageSize}&page=${pageIndex + 1}&_=${Date.now()}`);
       if (!res.ok) throw new Error("Error al cargar cotizaciones");
       const data = await res.json();
       const cotizacionesData = Array.isArray(data.data) ? data.data : data.data?.data || [];
-      cacheRef.current[cacheKey] = cotizacionesData;
       setCotizaciones(cotizacionesData);
+      cacheRef.current[cacheKey] = cotizacionesData;
     } catch (err) {
       setError("Error al cargar cotizaciones");
     } finally {
@@ -391,10 +507,31 @@ const CotizacionTabla = forwardRef((props, ref) => {
     setEmployees(Array.isArray(emp) ? emp : (emp.data || []));
   };
 
+  // Obtener balances de inventario al montar SOLO UNA VEZ
   useEffect(() => {
-    fetchCotizaciones(page, rowsPerPage);
-    fetchSelects();
-  }, [page, rowsPerPage]);
+    fetch(`${API_BASE_URL}/api/inventory-balances`)
+      .then((res) => res.json())
+      .then((data) => setInventoryBalances(Array.isArray(data.data) ? data.data : []));
+  }, []);
+
+  // Llama al fetch correcto según la pestaña
+  useEffect(() => {
+    let status = 'pending_approval';
+    if (tab === 'approved') status = 'approved';
+    if (tab === 'cancelled') status = 'cancelled';
+    fetchCotizaciones(page, rowsPerPage, status);
+  }, [tab, page, rowsPerPage]);
+
+  // Función para limpiar caché y forzar recarga tras operaciones
+  const refetchCotizaciones = () => {
+    let status = 'pending_approval';
+    if (tab === 'approved') status = 'approved';
+    if (tab === 'cancelled') status = 'cancelled';
+    // Limpia solo la caché de la pestaña actual
+    const cacheKey = `${status}_${page}_${rowsPerPage}`;
+    delete cacheRef.current[cacheKey];
+    fetchCotizaciones(page, rowsPerPage, status, true);
+  };
 
   const handleEdit = (cot: any) => {
     setEditCotizacion(cot);
@@ -404,7 +541,7 @@ const CotizacionTabla = forwardRef((props, ref) => {
   const handleSaveEdit = () => {
     setShowEdit(false);
     setEditCotizacion(null);
-    fetchCotizaciones(page, rowsPerPage);
+    refetchCotizaciones();
   };
 
   const handleDelete = async (id: number) => {
@@ -414,7 +551,7 @@ const CotizacionTabla = forwardRef((props, ref) => {
         method: "DELETE",
       });
       if (res.ok) {
-        fetchCotizaciones(page, rowsPerPage);
+        refetchCotizaciones();
       } else {
         alert("Error al eliminar la cotización");
       }
@@ -430,19 +567,49 @@ const CotizacionTabla = forwardRef((props, ref) => {
 
   // Acción para aprobar cotización
   const handleApprove = async (id: number) => {
+    // Refrescar balances de inventario justo antes de validar
+    let latestBalances: any[] = [];
+    try {
+      const resBal = await fetch(`${API_BASE_URL}/api/inventory-balances`);
+      if (resBal.ok) {
+        const data = await resBal.json();
+        latestBalances = Array.isArray(data.data) ? data.data : [];
+        setInventoryBalances(latestBalances); // Actualiza el estado también
+      }
+    } catch {}
+
+    // Buscar la cotización a aprobar
+    const cotizacion = cotizaciones.find(cot => cot.id === id);
+    if (!cotizacion) {
+      setToast({ message: "Cotización no encontrada", type: "error" });
+      return;
+    }
+    // Validar stock para cada producto
+    const items = cotizacion.items || [];
+    for (const item of items) {
+      const balance = getInventoryBalanceForProduct(latestBalances, item.product_id);
+      if (item.quantity > balance) {
+        const prod = (products || []).find(p => p.id === item.product_id);
+        const prodName = prod ? prod.name : `ID ${item.product_id}`;
+        setToast({ message: `No hay suficiente stock para "${prodName}". Disponible: ${balance}, solicitado: ${item.quantity}`, type: "error" });
+        return;
+      }
+    }
     try {
       const res = await fetch(`${API_BASE_URL}/api/orders/${id}/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
       if (res.ok) {
-        setAlerta("La cotización se aprobó correctamente.");
-        fetchCotizaciones(page, rowsPerPage);
+        setToast({ message: "La cotización se aprobó correctamente.", type: "success" });
+        setTimeout(() => {
+          refetchCotizaciones();
+        }, 1200);
       } else {
-        alert("Error al aprobar la cotización");
+        setToast({ message: "Error al aprobar la cotización", type: "error" });
       }
     } catch (err) {
-      alert("Error de conexión al aprobar");
+      setToast({ message: "Error de conexión al aprobar", type: "error" });
     }
   };
 
@@ -455,7 +622,11 @@ const CotizacionTabla = forwardRef((props, ref) => {
       });
       if (res.ok) {
         setAlerta("La cotización se canceló correctamente.");
-        fetchCotizaciones(page, rowsPerPage);
+        // Determine status based on current tab
+        let status = 'pending_approval';
+        if (tab === 'approved') status = 'approved';
+        if (tab === 'cancelled') status = 'cancelled';
+        fetchCotizaciones(page, rowsPerPage, status);
       } else {
         alert("Error al rechazar la cotización");
       }
@@ -482,9 +653,9 @@ const CotizacionTabla = forwardRef((props, ref) => {
   };
 
   const exportToCSV = () => {
-    const headers = ["N° Orden", "Cliente", "Proveedor", "Fecha", "Estado", "Total"];
+    const headers = ["N° Orden", "Cliente", "Fecha", "Estado", "Total"];
     const rows = cotizaciones.map(c => [
-      c.order_number, c.customer?.name, c.supplier?.name, c.order_date, c.status, c.total_amount
+      c.order_number, c.customer?.name, c.order_date, c.status, c.total_amount
     ]);
     let csvContent = "data:text/csv;charset=utf-8," + [headers, ...rows].map(e => e.join(",")).join("\n");
     const encodedUri = encodeURI(csvContent);
@@ -497,9 +668,9 @@ const CotizacionTabla = forwardRef((props, ref) => {
   };
   const exportToPDF = () => {
     const doc = new jsPDF();
-    const headers = [["N° Orden", "Cliente", "Proveedor", "Fecha", "Estado", "Total"]];
+    const headers = [["N° Orden", "Cliente", "Fecha", "Estado", "Total"]];
     const rows = cotizaciones.map(c => [
-      c.order_number, c.customer?.name, c.supplier?.name, c.order_date, c.status, c.total_amount
+      c.order_number, c.customer?.name, c.order_date, c.status, c.total_amount
     ]);
     autoTable(doc, { head: headers, body: rows });
     doc.save("cotizaciones.pdf");
@@ -511,7 +682,6 @@ const CotizacionTabla = forwardRef((props, ref) => {
       <TableHeader>
         <TableRow className="border-t text-base [&>th]:h-auto [&>th]:py-3 sm:[&>th]:py-4.5">
           <TableHead>N° Orden</TableHead>
-          <TableHead>Proveedor</TableHead>
           <TableHead>Cliente</TableHead>
           <TableHead>Empleado</TableHead>
           <TableHead>Fecha orden</TableHead>
@@ -525,7 +695,6 @@ const CotizacionTabla = forwardRef((props, ref) => {
         {data.map((cot) => (
           <TableRow key={cot.id} className="text-base font-medium text-dark dark:text-white">
             <TableCell>{cot.order_number}</TableCell>
-            <TableCell>{cot.supplier?.name || cot.supplier_id || '-'}</TableCell>
             <TableCell>{cot.customer?.name || cot.customer_id || '-'}</TableCell>
             <TableCell>{cot.employee ? `${cot.employee.first_name} ${cot.employee.last_name}` : cot.employee_id || '-'}</TableCell>
             <TableCell>{cot.order_date ? new Date(cot.order_date).toLocaleDateString() : '-'}</TableCell>
@@ -572,8 +741,6 @@ const CotizacionTabla = forwardRef((props, ref) => {
   useImperativeHandle(ref, () => ({
     fetchCotizaciones,
   }));
-
-  CotizacionTabla.displayName = "CotizacionTabla";
 
   if (loading) return <div className="p-4">Cargando cotizaciones...</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
@@ -636,8 +803,17 @@ const CotizacionTabla = forwardRef((props, ref) => {
           employees={employees}
         />
       )}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 });
 
-export default CotizacionTabla;
+CotizacionTablaWrapper.displayName = "CotizacionTabla";
+
+export default CotizacionTablaWrapper;

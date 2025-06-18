@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from "react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { TrashIcon, PencilSquareIcon } from "@/assets/icons";
-import { EyeIcon } from "@/assets/icons";
-import AddProveedoresModal from "@/components/Modals/AddProveedoresModal";
+import { MaterialReactTable } from 'material-react-table';
+import { Box, IconButton, Typography } from "@mui/material";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { API_BASE_URL } from "@/lib/constants";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -89,72 +90,76 @@ export default function ProveedoresTabla() {
     doc.save("proveedores.pdf");
   };
 
+  const columns = [
+    { accessorKey: "name", header: "Proveedor" },
+    { accessorKey: "contact_person", header: "Contacto" },
+    { accessorKey: "phone", header: "Teléfono" },
+    { accessorKey: "email", header: "Email" },
+    { accessorKey: "address", header: "Dirección" },
+    { accessorKey: "tax_id", header: "RIF" },
+    { accessorKey: "notes", header: "Notas" },
+    {
+      accessorKey: "active",
+      header: "Activo",
+      Cell: ({ cell }: any) => (cell.getValue() ? "Sí" : "No"),
+    },
+  ];
+
   if (loading) return <div className="p-4">Cargando proveedores...</div>;
 
   return (
-    <div className="rounded-[10px] bg-white shadow-1 dark:bg-gray-dark dark:shadow-card">
-      {/* <div className="flex justify-end p-4">
-        <AddProveedoresModal onSuccess={fetchProveedores} />
-      </div> */}
+    <Box sx={{ mt: 2 }} className="rounded-[10px] bg-white shadow-1 dark:bg-gray-dark dark:shadow-card">
       <div className="flex justify-end gap-2 mb-2">
         <button onClick={exportToPDF} className="bg-primary text-white px-3 py-1 rounded">Descargar PDF</button>
         <button onClick={exportToCSV} className="bg-primary text-white px-3 py-1 rounded">Descargar CSV</button>
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow className="border-t text-base [&>th]:h-auto [&>th]:py-3 sm:[&>th]:py-4.5">
-            <TableHead className="min-w-[120px] pl-5 sm:pl-6 xl:pl-7.5">Proveedor</TableHead>
-            <TableHead>Contacto</TableHead>
-            <TableHead>Teléfono</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Dirección</TableHead>
-            <TableHead>RIF</TableHead>
-            <TableHead>Notas</TableHead>
-            <TableHead>Activo</TableHead>
-            <TableHead className="text-right xl:pr-7.5">Opciones</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {proveedores.map((proveedor) => (
-            <TableRow key={proveedor.id} className="text-base font-medium text-dark dark:text-white">
-              <TableCell>{proveedor.name}</TableCell>
-              <TableCell>{proveedor.contact_person}</TableCell>
-              <TableCell>{proveedor.phone}</TableCell>
-              <TableCell>{proveedor.email}</TableCell>
-              <TableCell>{proveedor.address}</TableCell>
-              <TableCell>{proveedor.tax_id}</TableCell>
-              <TableCell>{proveedor.notes}</TableCell>
-              <TableCell>{proveedor.active ? "Sí" : "No"}</TableCell>
-              <TableCell className="xl:pr-7.5">
-                <div className="flex items-center justify-end gap-x-3.5">
-                  <button className="hover:text-primary" onClick={() => handleDetails(proveedor)}>
-                    <span className="sr-only">Ver</span>
-                    <EyeIcon />
-                  </button>
-                  <button className="hover:text-primary" onClick={() => handleEdit(proveedor)}>
-                    <span className="sr-only">Editar</span>
-                    <PencilSquareIcon />
-                  </button>
-                  <button className="hover:text-red-500" onClick={() => handleDelete(proveedor.id)}>
-                    <span className="sr-only">Eliminar</span>
-                    <TrashIcon />
-                  </button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <div className="flex justify-end mt-4">
-        <button disabled={page === 0} onClick={() => setPage(page - 1)}>Anterior</button>
-        <span className="mx-2">Página {page + 1}</span>
-        <button onClick={() => setPage(page + 1)}>Siguiente</button>
-      </div>
-      {/*
-      {selectedProveedor && (
-        <EditProveedorModal proveedor={selectedProveedor} isOpen={showEdit} onClose={() => setShowEdit(false)} onSave={handleSaveEdit} />
-      )}
-      */}
-    </div>
+      <MaterialReactTable
+        columns={columns}
+        data={proveedores}
+        state={{ isLoading: loading, pagination: { pageIndex: page, pageSize: rowsPerPage } }}
+        enableFullScreenToggle={false}
+        enableRowActions
+        positionActionsColumn="last"
+        onPaginationChange={(updater) => {
+          const next = typeof updater === 'function' ? updater({ pageIndex: page, pageSize: rowsPerPage }) : updater;
+          setPage(next.pageIndex);
+          setRowsPerPage(next.pageSize);
+        }}
+        renderRowActions={({ row }) => (
+          <Box sx={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+            <IconButton onClick={() => handleDetails(row.original)} size="small">
+              <VisibilityIcon fontSize="small" />
+            </IconButton>
+            <IconButton onClick={() => handleEdit(row.original)} size="small">
+              <EditIcon fontSize="small" />
+            </IconButton>
+            <IconButton color="error" onClick={() => handleDelete(row.original.id)} size="small">
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Box>
+        )}
+        muiTablePaperProps={{
+          elevation: 2,
+          sx: {
+            borderRadius: "10px",
+            overflow: "hidden",
+          },
+        }}
+        muiTableContainerProps={{
+          sx: {
+            maxHeight: "600px",
+          },
+        }}
+        muiTableHeadCellProps={{
+          sx: { fontWeight: "bold", fontFamily: "Satoshi" },
+        }}
+        muiTableBodyCellProps={{
+          sx: { fontSize: "0.95rem", fontFamily: "Satoshi" },
+        }}
+        muiPaginationProps={{
+          rowsPerPageOptions: [5, 10, 20],
+        }}
+      />
+    </Box>
   );
 }
